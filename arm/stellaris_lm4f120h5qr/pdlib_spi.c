@@ -24,7 +24,9 @@
  * 				Added function to send data(blocking)
  * 
  */
- 
+
+#ifdef LM4F120H5QR
+
 #define SSIPERIPH   0
 #define SSIBASE     1
 
@@ -62,6 +64,11 @@ static const unsigned long g_GPIOConfigure[5][7] =
 /* PS: RX data */
 char *g_plRxData[256];
 
+#endif
+
+
+#ifdef LM4F120H5QR
+
 /* PS:
  * 
  * Function		: 	ConfigureSPIInterface
@@ -74,7 +81,7 @@ char *g_plRxData[256];
  * 					GPIO configurations required and Clock configurations also done in the function.
  * 
  */
- 
+
 void
 ConfigureSPIInterface(unsigned char ucSSI)
 {
@@ -211,3 +218,5 @@ ReceiveDataNonBlocking(char *pcData)
 	
 	return iReturn;
 }
+
+#endif
