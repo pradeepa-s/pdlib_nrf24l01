@@ -1,10 +1,27 @@
-/* Authur:
- * 
+/* 
+ * Please find the license in the GIT repo.
  * 
  * Description:
  * 
  * The library contains functions to configure SSI interface in
- * LM4f120H5QR processor.
+ * LM4f120H5QR processor. The library is designed to be used to
+ * interface the NRF24L01 module with the processor.
+ * 
+ * Git repo:
+ * 
+ * https://github.com/pradeepa-s/pdlib_nrf24l01.git
+ * 
+ * Contributors:
+ * 
+ * Pradeepa Senanayake : pradeepa.kck@gmail.com
+ * 
+ * Change log:
+ * 
+ * 2014-07-09 : Support for LM4F120H5QR processor
+ * 				Added configurations required for Freescale SPI
+ * 				Added GPIO configurations for all SSI modules
+ * 				Added function to get one byte(blocking and none blocking)
+ * 				Added function to send data(blocking)
  * 
  */
  
@@ -19,8 +36,10 @@
 #define GPIOBASE    5
 #define GPIOPINS    6
  
+/* PS: Variable to track which SSI module is being used */
 static unsigned char g_SSI = 6;
 
+/* PS: SSI Base and SSI Peripheral defines mapping */
 static const unsigned long g_SSIModule[5][2] =
 {
 	 {SYSCTL_PERIPH_SSI0, SSI0_BASE},
@@ -29,7 +48,8 @@ static const unsigned long g_SSIModule[5][2] =
 	 {SYSCTL_PERIPH_SSI3, SSI3_BASE},
 	 {SYSCTL_PERIPH_SSI1, SSI1_BASE}
 };
- 
+
+/* PS: GPIO conficurations for SSI modules*/ 
 static const unsigned long g_GPIOConfigure[5][7] =
 {
 	 {SYSCTL_PERIPH_GPIOA, GPIO_PA2_SSI0CLK, GPIO_PA3_SSI0FSS, GPIO_PA4_SSI0RX, GPIO_PA5_SSI0TX, GPIO_PORTA_BASE, GPIO_PIN_5 | GPIO_PIN_4 | GPIO_PIN_3 | GPIO_PIN_2},
@@ -39,7 +59,21 @@ static const unsigned long g_GPIOConfigure[5][7] =
 	 {SYSCTL_PERIPH_GPIOD, GPIO_PD0_SSI0CLK, GPIO_PD1_SSI0FSS, GPIO_PD2_SSI0RX, GPIO_PD3_SSI0TX, GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3}
 }
 
+/* PS: RX data */
 char *g_plRxData[256];
+
+/* PS:
+ * 
+ * Function		: 	ConfigureSPIInterface
+ * 
+ * Arguments	: 	ucSSI - SSI module index (0,1,2,3,4,5) [5 is for SSI1 with GPIO PORTD]
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	The function will setup the SSI module to make it same as Freescale SPI module.
+ * 					GPIO configurations required and Clock configurations also done in the function.
+ * 
+ */
  
 void
 ConfigureSPIInterface(unsigned char ucSSI)
@@ -76,6 +110,22 @@ ConfigureSPIInterface(unsigned char ucSSI)
 	}
 }
 
+
+/* PS:
+ * 
+ * Function		: 	SendData
+ * 
+ * Arguments	: 	pcData 		- Char array of data to be sent. 
+ * 					uiLength	- Length of the data array
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	The function will submit data byte by byte to the SPI module
+ * 					for transmittion and will wait until the total transmission 
+ * 					is over. The function is a blocking function.
+ * 
+ */
+
 void
 SendData(char *pcData, unsigned int uiLength)
 {
@@ -98,6 +148,21 @@ SendData(char *pcData, unsigned int uiLength)
 	}
 }
 
+
+/* PS:
+ * 
+ * Function		: 	ReceiveDataBlocking
+ * 
+ * Arguments	: 	pcData - Pre allocated 'char' value to receive data
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	The function will read one byte of data from the SSI
+ * 					module RX FIFO. The function will not return until 
+ * 					data is available.
+ * 
+ */
+
 void
 ReceiveDataBlocking(char *pcData)
 {
@@ -110,6 +175,22 @@ ReceiveDataBlocking(char *pcData)
 	
 	(*pcData) = (char)(ulRxData);
 }
+
+/* PS:
+ * 
+ * Function		: 	ReceiveDataNonBlocking
+ * 
+ * Arguments	: 	pcData - Pre allocated 'char' value to receive data
+ * 
+ * Return		: 	unsigned int value, which contains the number of bytes read.
+ * 
+ * Description	: 	The function will read one byte of data from the SSI
+ * 					module RX FIFO. The function is none blocking. It will
+ * 					return zero if there are no data in the RX-FIFO of the
+ * 					SSI module
+ * 
+ */
+
 
 unsigned int 
 ReceiveDataNonBlocking(char *pcData)
