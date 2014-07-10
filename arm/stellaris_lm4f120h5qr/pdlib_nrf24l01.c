@@ -33,6 +33,15 @@
 #ifdef LM4F120H5QR
 
 static unsigned long g_ulCEPin;
+static unsigned long g_ulCEBase;
+
+static unsigned long g_ulCEConf[5] = 
+{	SYSCTL_PERIPH_GPIOA,
+	SYSCTL_PERIPH_GPIOC,
+	SYSCTL_PERIPH_GPIOD,
+	SYSCTL_PERIPH_GPIOE,
+	SYSCTL_PERIPH_GPIOF
+};
 
 #endif
 
@@ -41,18 +50,22 @@ static unsigned long g_ulCEPin;
  * 
  * Function		: 	NRF24L01_Init
  * 
- * Arguments	: 	
+ * Arguments	: 	ulCEBase	:	This is the base of the CE pin
+ * 					ulCEPin		:	This is the pin to be used for CE pin
+ * 					ucSSIIndex	:	The index of the SSI module
  * 
  * Return		: 	None
  * 
- * Description	: 	
+ * Description	: 	The function will initialize the SSI communication 
+ * 					for the module. Also the function intializes and
+ * 					configures the CE pin.
  * 
  */
   
 #ifdef LM4F120H5QR
 
 void
-NRF24L01_Init(unsigned long ulCEPin, unsigned char ucSSIIndex)
+NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSIIndex)
 {
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
@@ -60,9 +73,12 @@ NRF24L01_Init(unsigned long ulCEPin, unsigned char ucSSIIndex)
 #endif
 
 	/* PS: Set the CE pin */
+	g_ulCEBase = ulCEBase;
 	g_ulCEPin = ulCEPin;
 	
-	
+	/* PS: Configure the CE pin to be GPIO output */
+	ROM_SysCtlPeripheralEnable(g_ulCEConf[ulCEBase]);
+	ROM_GPIOPinTypeGPIOOutput(g_ulCEBase, g_ulCEPin);
 }
 
 #endif
@@ -117,7 +133,7 @@ NRF24L01_SetAirDataRate(unsigned char ucDataRate)
  */
  
 void
-NRF24L01_SetAirDataRate(unsigned char ucRFChannel)
+NRF24L01_SetRFChannel(unsigned char ucRFChannel)
 {
 }
  
@@ -161,6 +177,23 @@ NRF24L01_SetLNAGain(unsigned char ucLNAGain)
 
 /* PS:
  * 
+ * Function		: 	NRF24L01_PowerDown
+ * 
+ * Arguments	: 	
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	
+ * 
+ */
+ 
+void
+NRF24L01_PowerDown()
+{
+}
+
+/* PS:
+ * 
  * Function		: 	NRF24L01_
  * 
  * Arguments	: 	
@@ -195,17 +228,18 @@ NRF24L01_SendCommand(unsigned char ucCommand)
  * 
  * Function		: 	NRF24L01_CELow
  * 
- * Arguments	: 	
+ * Arguments	: 	None
  * 
  * Return		: 	None
  * 
- * Description	: 	
+ * Description	: 	This function drives the CE pin low
  * 
  */
  
 static void
 NRF24L01_CELow()
 {
+	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
 }
  
   
@@ -213,15 +247,16 @@ NRF24L01_CELow()
  * 
  * Function		: 	NRF24L01_CEHigh
  * 
- * Arguments	: 	
+ * Arguments	: 	None
  * 
  * Return		: 	None
  * 
- * Description	: 	
+ * Description	: 	This function drives the CE pin high
  * 
  */
 
 static void
 NRF24L01_CEHigh()
 {
+	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
 }
