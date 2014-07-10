@@ -43,6 +43,7 @@ static unsigned long g_ulCEConf[5] =
 	SYSCTL_PERIPH_GPIOF
 };
 
+static unsigned char g_ucStatus;
 #endif
 
 
@@ -67,6 +68,7 @@ static unsigned long g_ulCEConf[5] =
 void
 NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSIIndex)
 {
+	g_ucStatus = 0x00;
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
 	ConfigureSPIInterface(ucSSIIndex);
@@ -79,6 +81,8 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 	/* PS: Configure the CE pin to be GPIO output */
 	ROM_SysCtlPeripheralEnable(g_ulCEConf[ulCEBase]);
 	ROM_GPIOPinTypeGPIOOutput(g_ulCEBase, g_ulCEPin);
+	
+	g_ucStatus = 0x01;
 }
 
 #endif
@@ -192,6 +196,43 @@ NRF24L01_PowerDown()
 {
 }
 
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_GetData
+ * 
+ * Arguments	: 	
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	
+ * 
+ */
+ 
+void
+NRF24L01_GetData()
+{
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_SetModuleAddress
+ * 
+ * Arguments	: 	
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	
+ * 
+ */
+ 
+void 
+NRF24L01_SetModuleAddress()
+{
+}
+ 
+ 
 /* PS:
  * 
  * Function		: 	NRF24L01_
@@ -207,20 +248,54 @@ NRF24L01_PowerDown()
 
 /* PS:
  * 
- * Function		: 	NRF24L01_SendCommand
+ * Function		: 	NRF24L01_ExecuteCommand
  * 
- * Arguments	: 	
+ * Arguments	: 	ucType		: 	0x01 - For RX
+ * 									0x02 - For TX
+ * 					ucCommand	:	Command to be executed.
+ * 					pucPayload	:	Payload of the command.
+ * 					uiLength	:	Length of the payload.
  * 
- * Return		: 	None
+ * Return		: 	Number of bytes transferred or received if success.
+ * 					Negetive error code if failed.
  * 
- * Description	: 	
+ * Description	: 	ExecuteCommand function can be used to send commands
+ * 					to the RF module 
+ * 
+ * 					For TX:
+ * 
+ * 					The payload	of the command can also be submitted to 
+ * 					the function for easier operation. The ucType parameter 
+ * 					should be set to 0x02. The function will return after
+ * 					all the data is submitted to the module.
+ * 
+ * 					For RX:
+ * 
+ * 					A buffer should be preallocated and provided to the 
+ * 					function. The length of the buffer is also expected.
+ * 					The ucType parameter should be set to 0x01. Function 
+ * 					will return as soon as it received the number of bytes 
+ * 					specified by the uiLength or when the module has no
+ * 					more data in the Rx FIFO.
  * 
  */
 
-static void
-NRF24L01_SendCommand(unsigned char ucCommand)
+static int
+NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucPayload, unsigned int uiLength)
 {
+	int iReturn = -1;
 	
+	if(0x01 == ucType)
+	{
+		/* PS: Rx operation */
+	}else if(0x02 == ucType)
+	{
+		/* PS: Tx operation */
+	}else
+	{
+	}
+	
+	return iReturn;
 }
 
 
