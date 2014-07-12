@@ -1,0 +1,8 @@
+NRF24L01 TX Operation
+=====================
+
+Possible TX scenarios,
+
+1. Need to transmit data but TX FIFO is full.
+2. Need to transmit data but payload is more than FIFO size.
+

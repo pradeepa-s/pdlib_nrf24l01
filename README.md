@@ -13,4 +13,3 @@ Data transfering path:
 Processor ---> SSI module ---> NRF24L01
 
 SSI modules can be configured in several ways. For instance SSI1 can be onfigured to use GPIOF or GPIOD.
-
