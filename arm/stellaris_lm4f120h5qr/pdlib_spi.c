@@ -71,7 +71,7 @@ char *g_plRxData[256];
 
 /* PS:
  * 
- * Function		: 	ConfigureSPIInterface
+ * Function		: 	pdlibSPI_ConfigureSPIInterface
  * 
  * Arguments	: 	ucSSI - SSI module index (0,1,2,3,4,5) [5 is for SSI1 with GPIO PORTD]
  * 
@@ -83,10 +83,11 @@ char *g_plRxData[256];
  */
 
 void
-ConfigureSPIInterface(unsigned char ucSSI)
+pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 {
 	g_SSI = ucSSI;
 
+#ifdef LM4F120H5QR
 	if(g_SSI < 6)
 	{
 		 /* Enable clock for SSI */
@@ -115,17 +116,20 @@ ConfigureSPIInterface(unsigned char ucSSI)
 		/* Clear initial data */
 		while(ROM_SSIDataGetNonBlocking(g_SSIModule[ucSSI][SSIBASE], &g_plRxData[0]);
 	}
+#endif
 }
 
 
 /* PS:
  * 
- * Function		: 	SendData
+ * Function		: 	pdlibSPI_SendData
  * 
- * Arguments	: 	pcData 		- Char array of data to be sent. 
- * 					uiLength	- Length of the data array
+ * Arguments	: 	pucData 		- Char array of data to be sent. 
+ * 					uiLength		- Length of the data array
  * 
- * Return		: 	None
+ * Return		: 	If success the function will return the number of data
+ * 					bytes it has written to the SPI module. 
+ * 					If failed the function will return ZERO.
  * 
  * Description	: 	The function will submit data byte by byte to the SPI module
  * 					for transmittion and will wait until the total transmission 
@@ -133,32 +137,36 @@ ConfigureSPIInterface(unsigned char ucSSI)
  * 
  */
 
-void
-SendData(char *pcData, unsigned int uiLength)
+int
+pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 {
 	//unsigned long ulData;
 	int iIndex = 0;
 	/* Validate parameters */
-	if((pcData != NULL) && (uiLength > 0) && (g_SSI < 5))
+	if((pucData != NULL) && (uiLength > 0) && (g_SSI < 5))
 	{
+#ifdef LM4F120H5QR
 			/* Wait until previous transmission is over */
 			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]);
 			
 			while(iIndex < uiLength)
 			{
 				//ulData = pcData;
-				ROM_SSIDataPut(g_SSIModule[g_SSI][SSIBASE], pcData[iIndex++]);
+				ROM_SSIDataPut(g_SSIModule[g_SSI][SSIBASE], pucData[iIndex++]);
 			}
 			
 			/* Wait until current transmission is over */
 			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]);
+#endif
 	}
+	
+	return iIndex;
 }
 
 
 /* PS:
  * 
- * Function		: 	ReceiveDataBlocking
+ * Function		: 	pdlibSPI_ReceiveDataBlocking
  * 
  * Arguments	: 	pcData - Pre allocated 'char' value to receive data
  * 
@@ -171,7 +179,7 @@ SendData(char *pcData, unsigned int uiLength)
  */
 
 void
-ReceiveDataBlocking(char *pcData)
+pdlibSPI_ReceiveDataBlocking(char *pcData)
 {
 	unsigned long ulRxData;
 	/* Validate the arguments */
@@ -185,7 +193,7 @@ ReceiveDataBlocking(char *pcData)
 
 /* PS:
  * 
- * Function		: 	ReceiveDataNonBlocking
+ * Function		: 	pdlibSPI_ReceiveDataNonBlocking
  * 
  * Arguments	: 	pcData - Pre allocated 'char' value to receive data
  * 
@@ -200,7 +208,7 @@ ReceiveDataBlocking(char *pcData)
 
 
 unsigned int 
-ReceiveDataNonBlocking(char *pcData)
+pdlibSPI_ReceiveDataNonBlocking(char *pcData)
 {
 	unsigned int iReturn = 0;
 	unsigned long ulRxData;
