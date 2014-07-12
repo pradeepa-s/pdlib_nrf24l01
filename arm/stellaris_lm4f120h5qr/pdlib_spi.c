@@ -168,9 +168,9 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
  * 
  * Function		: 	pdlibSPI_ReceiveDataBlocking
  * 
- * Arguments	: 	pcData - Pre allocated 'char' value to receive data
+ * Arguments	: 	None
  * 
- * Return		: 	None
+ * Return		: 	Returns the byte value read
  * 
  * Description	: 	The function will read one byte of data from the SSI
  * 					module RX FIFO. The function will not return until 
@@ -178,17 +178,14 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
  * 
  */
 
-void
-pdlibSPI_ReceiveDataBlocking(char *pcData)
+unsigned char
+pdlibSPI_ReceiveDataBlocking()
 {
 	unsigned long ulRxData;
-	/* Validate the arguments */
-	if(pcData != NULL)
-	{
-		ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
-	}
+
+	ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
 	
-	(*pcData) = (char)(ulRxData);
+	return ((unsigned char)(ulRxData));
 }
 
 /* PS:
