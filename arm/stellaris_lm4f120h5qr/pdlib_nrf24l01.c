@@ -29,6 +29,10 @@
  * 
  */
  
+#include "nRF24L01.h"
+
+#define TYPE_RX		0x01
+#define TYPE_TX		0x02
 
 #ifdef LM4F120H5QR
 
@@ -44,6 +48,7 @@ static unsigned long g_ulCEConf[5] =
 };
 
 static unsigned char g_ucStatus;
+static unsigned char g_ucPdlibStatus;
 #endif
 
 
@@ -68,7 +73,7 @@ static unsigned char g_ucStatus;
 void
 NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSIIndex)
 {
-	g_ucStatus = 0x00;
+	g_ucPdlibStatus = 0x00;
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
 	pdlibSPI_ConfigureSPIInterface(ucSSIIndex);
@@ -82,7 +87,7 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 	ROM_SysCtlPeripheralEnable(g_ulCEConf[ulCEBase]);
 	ROM_GPIOPinTypeGPIOOutput(g_ulCEBase, g_ulCEPin);
 	
-	g_ucStatus = 0x01;
+	g_ucPdlibStatus = 0x01;
 }
 
 #endif
@@ -103,6 +108,8 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 unsigned char 
 NRF24L01_GetStatus()
 {
+	NRF24L01_ExecuteCommand(TYPE_TX, RF24_NOP, NULL, 0, &g_ucStatus);
+	return g_ucStatus;
 }
 
 /* PS:
@@ -199,19 +206,55 @@ NRF24L01_PowerDown()
 
 /* PS:
  * 
- * Function		: 	NRF24L01_GetData
+ * Function		: 	_NRF24L01_RegisterWrite_8
  * 
- * Arguments	: 	
+ * Arguments	: 	ucRegister	:	Address of the register
+ * 					ucValue		:	Value to write to the register
  * 
  * Return		: 	None
  * 
- * Description	: 	
+ * Description	: 	This function will write 1 byte of data to an 8 bit
+ * 					register. The function will update the Status
+ * 					variable too.
  * 
  */
  
-void
-NRF24L01_GetData()
+static void
+_NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
 {
+	unsigned char ucData[2];
+	
+	ucData[0] = (RF24_W_REGISTER | ucRegister);
+	ucDate[1] = ucValue;
+	
+	pdlibSPI_SendData(ucData, 2);
+	
+	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
+}
+
+
+/* PS:
+ * 
+ * Function		: 	_NRF24L01_RegisterRead_8
+ * 
+ * Arguments	: 	ucRegister	:	Address of the register
+ * 
+ * Return		: 	The value in the 8 bit register
+ * 
+ * Description	: 	This function will write 1 byte of data to an 8 bit
+ * 					register. The function will update the Status
+ * 					variable too.
+ * 
+ */
+ 
+static unsigned char
+_NRF24L01_RegisterRead_8(unsigned char )
+{
+	pdlibSPI_SendData((RF24_R_REGISTER | ucRegister), 1);
+	
+	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
+	
+	return pdlibSPI_ReceiveDataBlocking();
 }
 
 
@@ -259,6 +302,9 @@ NRF24L01_SetModuleAddress()
  * 									(If there is no data buffer this value
  * 									must be set to zero)
  * 
+ * 					pucStatus	: 	If not NULL status register value will
+ * 									be saved here.
+ * 
  * Return		: 	Number of bytes transferred or received if success.
  * 					Negetive error code if failed.
  * 
@@ -284,7 +330,7 @@ NRF24L01_SetModuleAddress()
  */
 
 int
-NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength)
+NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength, unsigned char *pucStatus)
 {
 	int iReturn = -1;
 	unsigned char *pucDataBuffer = NULL;
@@ -296,12 +342,19 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
 		{
 			return iReturn;
 		}
+	}else
+	{
+		if((TYPE_TX == ucType) && (RF24_NOP != ucCommand))
+		{
+			/* PS: Buffer length should be at least one */
+			return iReturn;
+		}
 	}
 	
-	if(0x01 == ucType)
+	if(TYPE_RX == ucType)
 	{
 		/* PS: Rx operation */
-	}else if(0x02 == ucType)
+	}else if(TYPE_TX == ucType)
 	{
 		/* PS: Tx operation */
 		
@@ -318,10 +371,16 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
 		memcpy(&pucDataBuffer[1],pucData,uiLength);
 		
 		iReturn = pdlibSPI_SendData(pucDataBuffer, (uiLength+1));
+		
+		/* PS: Update the current status register value */
+		pdlibSPI_ReceiveDataBlocking(&g_ucStatus);
+		(*pucStatus) = g_ucStatus;
+		
 #endif
 	}else
 	{
 	}
+	
 	
 	return iReturn;
 }
