@@ -13,7 +13,7 @@
  * 
  * Command word: 	MSBit to LSBit
  * 
- * Data bytes:		LSByte to LSByte (MSBit first in every byte)
+ * Data bytes:		LSByte to MSByte (MSBit first in every byte)
  * 
  * 	
  * =====================================================================
@@ -71,7 +71,7 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 	g_ucStatus = 0x00;
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
-	ConfigureSPIInterface(ucSSIIndex);
+	pdlibSPI_ConfigureSPIInterface(ucSSIIndex);
 #endif
 
 	/* PS: Set the CE pin */
@@ -253,8 +253,11 @@ NRF24L01_SetModuleAddress()
  * Arguments	: 	ucType		: 	0x01 - For RX
  * 									0x02 - For TX
  * 					ucCommand	:	Command to be executed.
- * 					pucPayload	:	Payload of the command.
- * 					uiLength	:	Length of the payload.
+ * 					pucData		:	Tx: Payload of the command.
+ * 									Rx: Buffer to receive data.
+ * 					uiLength	:	Length of the payload/buffer.
+ * 									(If there is no data buffer this value
+ * 									must be set to zero)
  * 
  * Return		: 	Number of bytes transferred or received if success.
  * 					Negetive error code if failed.
@@ -280,10 +283,20 @@ NRF24L01_SetModuleAddress()
  * 
  */
 
-static int
-NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucPayload, unsigned int uiLength)
+int
+NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength)
 {
 	int iReturn = -1;
+	unsigned char *pucDataBuffer = NULL;
+	
+	/* PS: Validating arguments */
+	if(uiLength > 0)
+	{
+		if(NULL == pucData)
+		{
+			return iReturn;
+		}
+	}
 	
 	if(0x01 == ucType)
 	{
@@ -291,6 +304,21 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
 	}else if(0x02 == ucType)
 	{
 		/* PS: Tx operation */
+		
+		/* TODO:
+		 * Sometimes malloc and memcpy functions take longer time.
+		 * Need to check whether we can improve performance by 
+		 * executing the pdlibSPI_SendData function twice. That is 
+		 * once for command and next for payload. Then we can 
+		 * avoid using memcpy and malloc here.
+		 */
+#ifdef PDLIB_SPI		 
+		pucDataBuffer = (unsigned char*) malloc(sizeof(char) * (uiLength+1));
+		pucDataBuffer[0] = ucCommand;
+		memcpy(&pucDataBuffer[1],pucData,uiLength);
+		
+		iReturn = pdlibSPI_SendData(pucDataBuffer, (uiLength+1));
+#endif
 	}else
 	{
 	}
@@ -301,7 +329,7 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
 
 /* PS:
  * 
- * Function		: 	NRF24L01_CELow
+ * Function		: 	_NRF24L01_CELow
  * 
  * Arguments	: 	None
  * 
@@ -312,7 +340,7 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
  */
  
 static void
-NRF24L01_CELow()
+_NRF24L01_CELow()
 {
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
 }
@@ -320,7 +348,7 @@ NRF24L01_CELow()
   
 /* PS:
  * 
- * Function		: 	NRF24L01_CEHigh
+ * Function		: 	_NRF24L01_CEHigh
  * 
  * Arguments	: 	None
  * 
@@ -331,7 +359,7 @@ NRF24L01_CELow()
  */
 
 static void
-NRF24L01_CEHigh()
+_NRF24L01_CEHigh()
 {
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
 }
