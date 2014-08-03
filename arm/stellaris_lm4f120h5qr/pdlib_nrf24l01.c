@@ -29,27 +29,36 @@
  * 
  */
  
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "inc/hw_types.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/rom.h"
 #include "nRF24L01.h"
+#include "pdlib_nrf24l01.h"
+#include "pdlib_spi.h"
+
+
+static void _NRF24L01_CEHigh();
+static void _NRF24L01_CELow();
+static void _NRF24L01_CSNHigh();
+static void _NRF24L01_CSNLow();
+static void _NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue);
+static void _NRF24L01_RegisterWrite_Multi(unsigned char ucRegister, unsigned char *pucData, unsigned int uiLength);
+static void _NRF24L01_SendCommand(unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength);
+
 
 #define TYPE_RX		0x01
 #define TYPE_TX		0x02
 
-#ifdef LM4F120H5QR
-
 static unsigned long g_ulCEPin;
 static unsigned long g_ulCEBase;
-
-static unsigned long g_ulCEConf[5] = 
-{	SYSCTL_PERIPH_GPIOA,
-	SYSCTL_PERIPH_GPIOC,
-	SYSCTL_PERIPH_GPIOD,
-	SYSCTL_PERIPH_GPIOE,
-	SYSCTL_PERIPH_GPIOF
-};
+static unsigned long g_ulCSNPin;
+static unsigned long g_ulCSNBase;
 
 static unsigned char g_ucStatus;
 static unsigned char g_ucPdlibStatus;
-#endif
 
 
 /* PS:
@@ -57,7 +66,9 @@ static unsigned char g_ucPdlibStatus;
  * Function		: 	NRF24L01_Init
  * 
  * Arguments	: 	ulCEBase	:	This is the base of the CE pin
- * 					ulCEPin		:	This is the pin to be used for CE pin
+ * 					ulCEPin		:	This is the pin to be used for CE
+ * 					ulCSNBase	:	This is the base of the CSN pin
+ * 					ulCSNPin	:	This is the pin to be used for CSN
  * 					ucSSIIndex	:	The index of the SSI module
  * 
  * Return		: 	None
@@ -65,13 +76,17 @@ static unsigned char g_ucPdlibStatus;
  * Description	: 	The function will initialize the SSI communication 
  * 					for the module. Also the function intializes and
  * 					configures the CE pin.
+ *
+ * 					We cannot use the CSN pin (ie. FSS) in the SSI module
+ * 					because we need to keep it LOW throughout the data
+ * 					transmission. (ie: Write and Read passes)
  * 
  */
   
-#ifdef LM4F120H5QR
+#ifdef PART_LM4F120H5QR
 
 void
-NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSIIndex)
+NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned long ulCSNBase, unsigned long ulCSNPin,unsigned char ucSSIIndex)
 {
 	g_ucPdlibStatus = 0x00;
 	/* PS: Initialize communication */
@@ -83,10 +98,22 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 	g_ulCEBase = ulCEBase;
 	g_ulCEPin = ulCEPin;
 	
+	/* PS: Set the CSN pin */
+	g_ulCSNBase = ulCSNBase;
+	g_ulCSNPin = ulCSNPin;
+
 	/* PS: Configure the CE pin to be GPIO output */
-	ROM_SysCtlPeripheralEnable(g_ulCEConf[ulCEBase]);
+	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
 	ROM_GPIOPinTypeGPIOOutput(g_ulCEBase, g_ulCEPin);
 	
+	_NRF24L01_CELow();
+
+	/* PS: Configure the CSN pin to be GPIO output */
+	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+	ROM_GPIOPinTypeGPIOOutput(ulCSNBase, ulCSNPin);
+
+	_NRF24L01_CSNHigh();
+
 	g_ucPdlibStatus = 0x01;
 }
 
@@ -108,7 +135,7 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned char ucSSI
 unsigned char 
 NRF24L01_GetStatus()
 {
-	g_ucStatus = _NRF24L01_RegisterRead_8(RF24_NOP);
+	NRF24L01_RegisterRead_8(RF24_NOP);
 	return g_ucStatus;
 }
 
@@ -128,7 +155,7 @@ NRF24L01_GetStatus()
 void
 NRF24L01_SetAirDataRate(unsigned char ucDataRate)
 {
-	unsigned char ucCurrentVal = _NRF24L01_RegisterRead_8(RF24_RF_SETUP);
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_RF_SETUP);
 	ucCurrentVal |= (ucDataRate << 3);
 	
 	_NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
@@ -177,7 +204,7 @@ NRF24L01_SetRFChannel(unsigned char ucRFChannel)
 void
 NRF24L01_SetPAGain(unsigned char ucPAGain)
 {
-	unsigned char ucCurrentVal = _NRF24L01_RegisterRead_8(RF24_RF_SETUP);
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_RF_SETUP);
 	ucCurrentVal |= (ucPAGain << 1);
 	
 	_NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
@@ -200,7 +227,7 @@ NRF24L01_SetPAGain(unsigned char ucPAGain)
 void
 NRF24L01_SetLNAGain(unsigned char ucLNAGain)
 {
-	unsigned char ucCurrentVal = _NRF24L01_RegisterRead_8(RF24_RF_SETUP);
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_RF_SETUP);
 	ucCurrentVal |= (ucLNAGain << 0);
 	
 	_NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
@@ -222,10 +249,12 @@ NRF24L01_SetLNAGain(unsigned char ucLNAGain)
 void
 NRF24L01_PowerDown()
 {
-	unsigned char ucCurrentVal = _NRF24L01_RegisterRead_8(RF24_CONFIG);
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
 	ucCurrentVal &= (~RF24_PWR_UP);
 	
 	_NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
+	
+	_NRF24L01_CELow();
 }
 
 /* PS:
@@ -243,7 +272,7 @@ NRF24L01_PowerDown()
 void
 NRF24L01_PowerUp()
 {
-	unsigned char ucCurrentVal = _NRF24L01_RegisterRead_8(RF24_CONFIG);
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
 	ucCurrentVal |= (RF24_PWR_UP);
 	
 	_NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
@@ -252,7 +281,143 @@ NRF24L01_PowerUp()
 
 /* PS:
  * 
- * Function		: 	NRF24L01_SetModuleTXAddress
+ * Function		: 	NRF24L01_FlushTX
+ * 
+ * Arguments	: 	None
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	Flush tx.
+ * 
+ */
+ 
+void
+NRF24L01_FlushTX()
+{
+	_NRF24L01_SendCommand(RF24_FLUSH_TX, NULL, 0);
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_FlushRX
+ * 
+ * Arguments	: 	None
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	Flush rx.
+ * 
+ */
+ 
+void
+NRF24L01_FlushRX()
+{
+	_NRF24L01_SendCommand(RF24_FLUSH_RX, NULL, 0);
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_EnableRxMode
+ * 
+ * Arguments	: 	None
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	Put the module into RX mode
+ * 
+ */
+
+void
+NRF24L01_EnableRxMode()
+{
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
+	ucCurrentVal |= (RF24_PRIM_RX);
+	
+	_NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
+	
+	_NRF24L01_CEHigh();
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_EnableTxMode
+ * 
+ * Arguments	: 	None
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	Put the module into TX mode
+ * 
+ */
+
+void
+NRF24L01_EnableTxMode()
+{
+	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
+	ucCurrentVal &= (~RF24_PRIM_RX);
+	
+	_NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
+	
+	_NRF24L01_CEHigh();
+}
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_IsDataReadyRx
+ * 
+ * Arguments	: 	None
+ * 
+ * Return		: 	0	:	Data is not in RX FIFO
+ * 					1	:	Data is in RX FIFO
+ * 
+ * Description	: 	Get the state of RX FIFO
+ * 
+ */
+ 
+unsigned char 
+NRF24L01_IsDataReadyRx()
+{
+	unsigned char ucRxFifo;
+	ucRxFifo = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
+	
+	return ((ucRxFifo & RF24_RX_EMPTY) ? 0 : 1);
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_GetRxDataAmount
+ * 
+ * Arguments	: 	ucDataPipe	:	Index of the pipe
+ * 
+ * Return		: 	Available number of bytes.
+ * 
+ * Description	: 	Reading the number of data bytes available
+ * 					in the specified pipe.
+ * 
+ */
+
+unsigned char 
+NRF24L01_GetRxDataAmount(unsigned char ucDataPipe)
+{
+	unsigned char ucTemp;
+	if(ucDataPipe < 6)
+	{
+		ucTemp = NRF24L01_RegisterRead_8(RF24_RX_PW_P0 + ucDataPipe);
+		return (ucTemp & 0x3F);
+	}else
+	{
+		return 0;
+	}
+}
+	
+	
+/* PS:
+ * 
+ * Function		: 	NRF24L01_SetTXAddress
  * 
  * Arguments	: 	pucAddress	:	Buffer which contains the five bytes to put to address.
  * 
@@ -265,28 +430,69 @@ NRF24L01_PowerUp()
  */
  
 void 
-NRF24L01_SetModuleTXAddress(unsigned char* pucAddress)
+NRF24L01_SetTXAddress(unsigned char* pucAddress)
 {
 	_NRF24L01_RegisterWrite_Multi(RF24_TX_ADDR, pucAddress, 5);
 }
 
 
+
 /* PS:
  * 
- * Function		: 	NRF24L01_SendData_8
+ * Function		: 	NRF24L01_SetRXAddress
  * 
- * Arguments	: 	pucAddress	:	Buffer which contains the five bytes to put to address.
+ * Arguments	: 	ucDataPipe	:	Data pipe number
+ * 					pucAddress	:	Buffer which contains the one/five bytes to put to address.
  * 
  * Return		: 	None
  * 
- * Description	: 	Set the address of the receiving node.
+ * Description	: 	Set the RX address. P0 and P1 pipes have 5 byte address
+ * 					other pipes have 1 byte address(LSB). Other bites are taken from 
+ * 					the P1 pipe address.
  * 
  */
  
 void 
-NRF24L01_SendData_8(unsigned char* pucAddress)
+NRF24L01_SetRxAddress(unsigned char ucDataPipe, unsigned char *pucAddress)
 {
-	_NRF24L01_RegisterWrite_Multi(RF24_TX_ADDR, pucAddress, 5);
+	if(pucAddress)
+	{
+		switch(ucDataPipe)
+		{
+			case 0:
+			case 1:
+				_NRF24L01_RegisterWrite_Multi((RF24_RX_ADDR_P0 + ucDataPipe), pucAddress, 5);
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+				_NRF24L01_RegisterWrite_8((RF24_RX_ADDR_P0 + ucDataPipe),pucAddress[0]);
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_SetTxPayload
+ * 
+ * Arguments	: 	pucData		:	Buffer which contains the data to be written to TX fifo
+ * 					uiLength	:	Length of the data buffer
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	Set the TX payload. 
+ * 
+ */
+ 
+void 
+NRF24L01_SetTxPayload(unsigned char* pucData, unsigned int uiLength)
+{
+	_NRF24L01_SendCommand(RF24_W_TX_PAYLOAD, pucData, uiLength);
 }
  
  
@@ -379,7 +585,8 @@ NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned 
 		 * once for command and next for payload. Then we can 
 		 * avoid using memcpy and malloc here.
 		 */
-#ifdef PDLIB_SPI		 
+
+#ifdef PDLIB_SPI
 		pucDataBuffer = (unsigned char*) malloc(sizeof(char) * (uiLength+1));
 		if(pucDataBuffer)
 		{
@@ -444,6 +651,46 @@ _NRF24L01_CEHigh()
 }
 
 
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CSNLow
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CSN pin low
+ *
+ */
+
+static void
+_NRF24L01_CSNLow()
+{
+	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0x00);
+}
+
+
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CSNHigh
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CSN pin high
+ *
+ */
+
+static void
+_NRF24L01_CSNHigh()
+{
+	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0xFF);
+}
+
+
+
+
 
 /* PS:
  * 
@@ -466,11 +713,15 @@ _NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
 	unsigned char ucData[2];
 	
 	ucData[0] = (RF24_W_REGISTER | ucRegister);
-	ucDate[1] = ucValue;
+	ucData[1] = ucValue;
 	
+	_NRF24L01_CSNLow();
+
 	pdlibSPI_SendData(ucData, 2);
 	
 	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
+
+	_NRF24L01_CSNHigh();
 }
 
 
@@ -479,7 +730,7 @@ _NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
  * Function		: 	_NRF24L01_RegisterWrite_Multi
  * 
  * Arguments	: 	ucRegister	:	Address of the register
- * 					pucData	:	Value to write to the register
+ * 					pucData		:	Value to write to the register
  * 					uiLength	:	Length of the data field
  * 
  * Return		: 	None
@@ -495,7 +746,7 @@ _NRF24L01_RegisterWrite_Multi(unsigned char ucRegister, unsigned char *pucData, 
 {
 	if(NULL != pucData)
 	{
-		unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * uiLength);
+		unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength + 1));
 		
 		if(NULL != pucBuffer)
 		{
@@ -503,20 +754,67 @@ _NRF24L01_RegisterWrite_Multi(unsigned char ucRegister, unsigned char *pucData, 
 			
 			memcpy(&pucBuffer[1], pucData, uiLength);
 			
-			pdlibSPI_SendData(ucData, uiLength+1);
+			_NRF24L01_CSNLow();
+
+			pdlibSPI_SendData(pucBuffer, uiLength+1);
 			
 			g_ucStatus = pdlibSPI_ReceiveDataBlocking();
 			
+			_NRF24L01_CSNHigh();
+
 			free(pucBuffer);
 		}
 	}
-	
 }
 
 
 /* PS:
  * 
- * Function		: 	_NRF24L01_RegisterRead_8
+ * Function		: 	_NRF24L01_SendCommand
+ * 
+ * Arguments	: 	ucCommand	:	Command to send.
+ * 					pucData		:	Data associated with the command
+ * 					uiLength	:	Length of the data field
+ * 
+ * Return		: 	None
+ * 
+ * Description	: 	This function will send ay command with the data buffer
+ * 					to the RF module. This will also update the status register.
+ * 					If there is no payload for the command set the pucData NULL and
+ * 					make the uiLength as 0
+ * 
+ */
+ 
+static void
+_NRF24L01_SendCommand(unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength)
+{
+	unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength + 1));
+	
+	if(NULL != pucBuffer)
+	{
+		pucBuffer[0] = ucCommand;
+		
+		if(NULL != pucData)
+		{
+			memcpy(&pucBuffer[1], pucData, uiLength);
+		}
+		
+		_NRF24L01_CSNLow();
+
+		pdlibSPI_SendData(pucBuffer, uiLength+1);
+		
+		g_ucStatus = pdlibSPI_ReceiveDataBlocking();
+		
+		_NRF24L01_CSNHigh();
+
+		free(pucBuffer);
+	}
+}
+
+
+/* PS:
+ * 
+ * Function		: 	NRF24L01_RegisterRead_8
  * 
  * Arguments	: 	ucRegister	:	Address of the register
  * 
@@ -528,12 +826,23 @@ _NRF24L01_RegisterWrite_Multi(unsigned char ucRegister, unsigned char *pucData, 
  * 
  */
  
-static unsigned char
-_NRF24L01_RegisterRead_8(unsigned char ucRegister)
+unsigned char
+NRF24L01_RegisterRead_8(unsigned char ucRegister)
 {
-	pdlibSPI_SendData((RF24_R_REGISTER | ucRegister), 1);
+	unsigned char ucData = (RF24_R_REGISTER | ucRegister);
+
+	_NRF24L01_CSNLow();
+
+	pdlibSPI_SendData(&ucData, 0x01);
 	
 	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
 	
-	return pdlibSPI_ReceiveDataBlocking();
+	ucData = (RF24_NOP);
+	pdlibSPI_SendData(&ucData, 0x01);
+
+	ucData = pdlibSPI_ReceiveDataBlocking();
+
+	_NRF24L01_CSNHigh();
+
+	return ucData;
 }
