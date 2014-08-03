@@ -1,0 +1,11 @@
+
+**** Clean-only build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k clean 
+DEL /F  "pdlib_nrf24l01_test.out"
+DEL /F "main.pp" "pdlib_nrf24l01.pp" "pdlib_spi.pp" 
+DEL /F "main.obj" "pdlib_nrf24l01.obj" "pdlib_spi.obj" 
+'Finished clean'
+' '
+
+**** Build Finished ****
