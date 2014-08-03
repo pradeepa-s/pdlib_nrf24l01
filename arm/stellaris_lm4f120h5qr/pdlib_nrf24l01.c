@@ -119,16 +119,42 @@ NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned long ulCSN
 
 #endif
 
+/* PS:
+ *
+ * Function		: 	NRF24L01_RegisterInit
+ *
+ * Arguments	:	None
+ *
+ * Return		: 	None
+ *
+ * Description	:	This function will reset the CE pin and reset some registers.
+ *
+ */
+
+void
+NRF24L01_RegisterInit()
+{
+	_NRF24L01_CELow();
+	_NRF24L01_RegisterWrite_8(RF24_CONFIG,0x00);
+	_NRF24L01_RegisterWrite_8(RF24_EN_AA,0x3F);
+	_NRF24L01_RegisterWrite_8(RF24_EN_RXADDR,0x03);
+	_NRF24L01_RegisterWrite_8(RF24_SETUP_RETR,0x03);
+	_NRF24L01_RegisterWrite_8(RF24_RF_CH,0x02);
+	_NRF24L01_RegisterWrite_8(RF24_RF_SETUP,0x0F);
+	_NRF24L01_RegisterWrite_8(RF24_STATUS,0x0E);
+	_NRF24L01_RegisterWrite_8(RF24_DYNPD,0x00);
+	_NRF24L01_RegisterWrite_8(RF24_FEATURE,0x00);
+}
 
 /* PS:
  * 
  * Function		: 	NRF24L01_GetStatus
  * 
- * Arguments	: 	
+ * Arguments	: 	None.
  * 
- * Return		: 	None
+ * Return		: 	Status register value.
  * 
- * Description	: 	
+ * Description	: 	Gets the status register of the module
  * 
  */
 
@@ -274,7 +300,6 @@ NRF24L01_PowerUp()
 {
 	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
 	ucCurrentVal |= (RF24_PWR_UP);
-	
 	_NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
 }
 
@@ -716,10 +741,12 @@ _NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
 	ucData[1] = ucValue;
 	
 	_NRF24L01_CSNLow();
-
-	pdlibSPI_SendData(ucData, 2);
 	
-	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
+	/* PS: Send address */
+	g_ucStatus = pdlibSPI_TransferByte(ucData[0]);
+
+	/* PS: Send data */
+	pdlibSPI_TransferByte(ucData[1]);
 
 	_NRF24L01_CSNHigh();
 }
@@ -746,19 +773,18 @@ _NRF24L01_RegisterWrite_Multi(unsigned char ucRegister, unsigned char *pucData, 
 {
 	if(NULL != pucData)
 	{
-		unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength + 1));
+		unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength));
 		
 		if(NULL != pucBuffer)
 		{
-			pucBuffer[0] = (RF24_W_REGISTER | ucRegister);
 			
-			memcpy(&pucBuffer[1], pucData, uiLength);
 			
+			memcpy(pucBuffer, pucData, uiLength);
+
 			_NRF24L01_CSNLow();
 
+			g_ucStatus = pdlibSPI_TransferByte(RF24_W_REGISTER | ucRegister);
 			pdlibSPI_SendData(pucBuffer, uiLength+1);
-			
-			g_ucStatus = pdlibSPI_ReceiveDataBlocking();
 			
 			_NRF24L01_CSNHigh();
 
@@ -829,18 +855,13 @@ _NRF24L01_SendCommand(unsigned char ucCommand, unsigned char *pucData, unsigned 
 unsigned char
 NRF24L01_RegisterRead_8(unsigned char ucRegister)
 {
-	unsigned char ucData = (RF24_R_REGISTER | ucRegister);
+	unsigned char ucData;
 
 	_NRF24L01_CSNLow();
 
-	pdlibSPI_SendData(&ucData, 0x01);
+	g_ucStatus = pdlibSPI_TransferByte(RF24_R_REGISTER | ucRegister);
 	
-	g_ucStatus = pdlibSPI_ReceiveDataBlocking();
-	
-	ucData = (RF24_NOP);
-	pdlibSPI_SendData(&ucData, 0x01);
-
-	ucData = pdlibSPI_ReceiveDataBlocking();
+	ucData = pdlibSPI_TransferByte(RF24_NOP);
 
 	_NRF24L01_CSNHigh();
 

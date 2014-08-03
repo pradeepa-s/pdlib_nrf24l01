@@ -4,6 +4,7 @@
 /* PS: Function prototypes */
 
 void NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned long ulCSNBase, unsigned long ulCSNPin,unsigned char ucSSIIndex);
+void NRF24L01_RegisterInit();
 void NRF24L01_PowerDown();
 void NRF24L01_PowerUp();
 void NRF24L01_FlushTX();
