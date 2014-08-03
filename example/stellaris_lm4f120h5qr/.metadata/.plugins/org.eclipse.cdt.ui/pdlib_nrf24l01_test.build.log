@@ -1,11 +1,18 @@
 
-**** Clean-only build of configuration Debug for project pdlib_nrf24l01_test ****
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
 
-"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k clean 
-DEL /F  "pdlib_nrf24l01_test.out"
-DEL /F "main.pp" "pdlib_nrf24l01.pp" "pdlib_spi.pp" 
-DEL /F "main.obj" "pdlib_nrf24l01.obj" "pdlib_spi.obj" 
-'Finished clean'
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+'Building file: ../pdlib_nrf24l01.c'
+'Invoking: ARM Compiler'
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
+"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
+'Finished building: ../pdlib_nrf24l01.c'
+' '
+'Building target: pdlib_nrf24l01_test.out'
+'Invoking: ARM Linker'
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
+<Linking>
+'Finished building target: pdlib_nrf24l01_test.out'
 ' '
 
 **** Build Finished ****

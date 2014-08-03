@@ -14,26 +14,20 @@
 
 int main(void) {
 	
-	unsigned char ucStatus, ucStatus1, ucStatus3;
+	unsigned char ucStatus;
 
+	/* PS: Set the clock frequency of the processor */
 	SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ | SYSCTL_SYSDIV_5);
 
-	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
-
-	pdlibSPI_ConfigureSPIInterface(0x03);
+	/* PS: Initialize the module, need to provide CE pin, CSN pin and SSI module information */
 	NRF24L01_Init(GPIO_PORTE_BASE,GPIO_PIN_1, GPIO_PORTE_BASE, GPIO_PIN_2, 0x03);
-
-	//NRF24L01_PowerDown();
-
-	ucStatus3 = 0;
 
 	while(1)
 	{
-		ucStatus = NRF24L01_GetStatus();
-	//	ucStatus1 = NRF24L01_RegisterRead_8(ucStatus3);
-		ucStatus3++;
-		SysCtlDelay(0xFFFFFF);
+		NRF24L01_PowerUp();
+		ucStatus = NRF24L01_RegisterRead_8(0x00);
+		NRF24L01_PowerDown();
+		ucStatus = NRF24L01_RegisterRead_8(0x00);
 	}
 
 	return 0;

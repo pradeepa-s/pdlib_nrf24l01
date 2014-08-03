@@ -114,17 +114,18 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 		/* Configure SSI */
 		ROM_SSIClockSourceSet(g_SSIModule[ucSSI][SSIBASE], SSI_CLOCK_SYSTEM);
 		ROM_SSIConfigSetExpClk(g_SSIModule[ucSSI][SSIBASE], SysCtlClockGet(), SSI_FRF_MOTO_MODE_0,
-								SSI_MODE_MASTER, 5000000, 8);
+								SSI_MODE_MASTER, 8000000, 8);
 		ROM_SSIEnable(g_SSIModule[ucSSI][SSIBASE]);
 		
 		/* Clear initial data */
 		while(ROM_SSIDataGetNonBlocking(g_SSIModule[ucSSI][SSIBASE], (unsigned long*)&g_plRxData[0]));
-
+/*
 		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CPSR) = 8;
 
 		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CR0) &= ~(SSI_CR0_SPO | SSI_CR0_SPH);
 
 		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CR0) |= 0x00;
+*/
 	}
 #endif
 }
@@ -150,7 +151,7 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 int
 pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 {
-	//unsigned long ulData;
+	unsigned long ulRxData;
 	int iIndex = 0;
 	/* Validate parameters */
 	if((pucData != NULL) && (uiLength > 0) && (g_SSI < 5))
@@ -160,10 +161,16 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 			{
 				//ulData = pcData;
 				ROM_SSIDataPut(g_SSIModule[g_SSI][SSIBASE], pucData[iIndex++]);
+
+				/* Wait until current transmission is over */
+				while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
+
+				/* PS: Clear TX buffer */
+				ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
+
+				/* Wait until current transmission is over */
+				while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
 			}
-			
-			/* Wait until current transmission is over */
-			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
 #endif
 	}
 	
@@ -173,6 +180,46 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 
 /* PS:
  * 
+ * Function		: 	pdlibSPI_TransferByte
+ *
+ * Arguments	: 	ucData	:	Data byte to transfer
+ *
+ * Return		: 	Function will return whatever data received from the module during the transfer.
+ *
+ * Description	: 	The function will submit a data byte the SPI module
+ * 					for transmission and will wait until the total transmission
+ * 					is over. Then it will read the TX buffer and read one byte out from the buffer.
+ * 					This will clear the TX buffer.
+ *
+ */
+
+unsigned char
+pdlibSPI_TransferByte(unsigned char ucData)
+{
+	unsigned long ulRxData;
+	/* Validate parameters */
+	if(g_SSI < 5)
+	{
+#ifdef PART_LM4F120H5QR
+
+			ROM_SSIDataPut(g_SSIModule[g_SSI][SSIBASE], ucData);
+
+			/* Wait until current transmission is over */
+			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
+
+			ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
+
+			/* Wait until current transmission is over */
+			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
+#endif
+	}
+
+	return ((unsigned char)(ulRxData & 0xFF));
+}
+
+
+/* PS:
+ *
  * Function		: 	pdlibSPI_ReceiveDataBlocking
  * 
  * Arguments	: 	None
