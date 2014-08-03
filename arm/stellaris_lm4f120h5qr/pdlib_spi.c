@@ -25,7 +25,14 @@
  * 
  */
 
-#ifdef LM4F120H5QR
+#include <stdio.h>
+#include "pdlib_spi.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ssi.h"
+#include "driverlib/gpio.h"
+#include "driverlib/ssi.h"
+#include "driverlib/rom.h"
 
 #define SSIPERIPH   0
 #define SSIBASE     1
@@ -51,23 +58,20 @@ static const unsigned long g_SSIModule[5][2] =
 	 {SYSCTL_PERIPH_SSI1, SSI1_BASE}
 };
 
-/* PS: GPIO conficurations for SSI modules*/ 
+/* PS: GPIO configurations for SSI modules*/
 static const unsigned long g_GPIOConfigure[5][7] =
 {
 	 {SYSCTL_PERIPH_GPIOA, GPIO_PA2_SSI0CLK, GPIO_PA3_SSI0FSS, GPIO_PA4_SSI0RX, GPIO_PA5_SSI0TX, GPIO_PORTA_BASE, GPIO_PIN_5 | GPIO_PIN_4 | GPIO_PIN_3 | GPIO_PIN_2},
-	 {SYSCTL_PERIPH_GPIOF, GPIO_PF2_SSI0CLK, GPIO_PF3_SSI0FSS, GPIO_PF0_SSI0RX, GPIO_PF1_SSI0TX, GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_0 | GPIO_PIN_1},
-	 {SYSCTL_PERIPH_GPIOB, GPIO_PB4_SSI0CLK, GPIO_PB5_SSI0FSS, GPIO_PB6_SSI0RX, GPIO_PB7_SSI0TX, GPIO_PORTB_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7},
-	 {SYSCTL_PERIPH_GPIOD, GPIO_PD0_SSI0CLK, GPIO_PD1_SSI0FSS, GPIO_PD2_SSI0RX, GPIO_PD3_SSI0TX, GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3},
-	 {SYSCTL_PERIPH_GPIOD, GPIO_PD0_SSI0CLK, GPIO_PD1_SSI0FSS, GPIO_PD2_SSI0RX, GPIO_PD3_SSI0TX, GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3}
-}
+	 {SYSCTL_PERIPH_GPIOF, GPIO_PF2_SSI1CLK, GPIO_PF3_SSI1FSS, GPIO_PF0_SSI1RX, GPIO_PF1_SSI1TX, GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_0 | GPIO_PIN_1},
+	 {SYSCTL_PERIPH_GPIOB, GPIO_PB4_SSI2CLK, GPIO_PB5_SSI2FSS, GPIO_PB6_SSI2RX, GPIO_PB7_SSI2TX, GPIO_PORTB_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7},
+	 {SYSCTL_PERIPH_GPIOD, GPIO_PD0_SSI3CLK, GPIO_PD1_SSI3FSS, GPIO_PD2_SSI3RX, GPIO_PD3_SSI3TX, GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3},
+	 {SYSCTL_PERIPH_GPIOD, GPIO_PD0_SSI1CLK, GPIO_PD1_SSI1FSS, GPIO_PD2_SSI1RX, GPIO_PD3_SSI1TX, GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3}
+};
 
 /* PS: RX data */
-char *g_plRxData[256];
+char g_plRxData[256];
 
-#endif
-
-
-#ifdef LM4F120H5QR
+#ifdef PART_LM4F120H5QR
 
 /* PS:
  * 
@@ -87,7 +91,7 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 {
 	g_SSI = ucSSI;
 
-#ifdef LM4F120H5QR
+#ifdef PART_LM4F120H5QR
 	if(g_SSI < 6)
 	{
 		 /* Enable clock for SSI */
@@ -110,11 +114,17 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 		/* Configure SSI */
 		ROM_SSIClockSourceSet(g_SSIModule[ucSSI][SSIBASE], SSI_CLOCK_SYSTEM);
 		ROM_SSIConfigSetExpClk(g_SSIModule[ucSSI][SSIBASE], SysCtlClockGet(), SSI_FRF_MOTO_MODE_0,
-								SSI_MODE_MASTER, 8000000, 8);
+								SSI_MODE_MASTER, 5000000, 8);
 		ROM_SSIEnable(g_SSIModule[ucSSI][SSIBASE]);
 		
 		/* Clear initial data */
-		while(ROM_SSIDataGetNonBlocking(g_SSIModule[ucSSI][SSIBASE], &g_plRxData[0]);
+		while(ROM_SSIDataGetNonBlocking(g_SSIModule[ucSSI][SSIBASE], (unsigned long*)&g_plRxData[0]));
+
+		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CPSR) = 8;
+
+		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CR0) &= ~(SSI_CR0_SPO | SSI_CR0_SPH);
+
+		HWREG(g_SSIModule[ucSSI][SSIBASE] + SSI_O_CR0) |= 0x00;
 	}
 #endif
 }
@@ -132,7 +142,7 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
  * 					If failed the function will return ZERO.
  * 
  * Description	: 	The function will submit data byte by byte to the SPI module
- * 					for transmittion and will wait until the total transmission 
+ * 					for transmission and will wait until the total transmission
  * 					is over. The function is a blocking function.
  * 
  */
@@ -145,10 +155,7 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 	/* Validate parameters */
 	if((pucData != NULL) && (uiLength > 0) && (g_SSI < 5))
 	{
-#ifdef LM4F120H5QR
-			/* Wait until previous transmission is over */
-			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]);
-			
+#ifdef PART_LM4F120H5QR
 			while(iIndex < uiLength)
 			{
 				//ulData = pcData;
@@ -156,7 +163,7 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 			}
 			
 			/* Wait until current transmission is over */
-			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]);
+			while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
 #endif
 	}
 	
@@ -185,7 +192,7 @@ pdlibSPI_ReceiveDataBlocking()
 
 	ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
 	
-	return ((unsigned char)(ulRxData));
+	return ((unsigned char)(ulRxData & 0xFF));
 }
 
 /* PS:
