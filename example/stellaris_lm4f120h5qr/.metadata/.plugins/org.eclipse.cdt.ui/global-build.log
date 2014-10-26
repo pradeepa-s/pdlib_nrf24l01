@@ -1,30 +1,11 @@
 
-**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+**** Clean-only build of configuration Debug for project uart_test ****
 
-"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
-'Building file: ../main.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="main.pp"  "../main.c"
-"../main.c", line 43: warning #112-D: statement is unreachable
-"../main.c", line 17: warning #552-D: variable "ucStatus" was set but never used
-'Finished building: ../main.c'
-' '
-'Building file: ../pdlib_nrf24l01.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
-'Finished building: ../pdlib_nrf24l01.c'
-' '
-'Building file: ../pdlib_spi.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_spi.pp"  "../pdlib_spi.c"
-'Finished building: ../pdlib_spi.c'
-' '
-'Building target: pdlib_nrf24l01_test.out'
-'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
-<Linking>
-'Finished building target: pdlib_nrf24l01_test.out'
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k clean 
+DEL /F  "uart_test.out"
+DEL /F "main.pp" "uart_debug.pp" 
+DEL /F "main.obj" "uart_debug.obj" 
+'Finished clean'
 ' '
 
 **** Build Finished ****
@@ -35,30 +16,13 @@
 'Building file: ../pdlib_nrf24l01.c'
 'Invoking: ARM Compiler'
 "F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
+"../pdlib_nrf24l01.c", line 154: warning #552-D: variable "ucReg" was set but never used
+"../pdlib_nrf24l01.c", line 66: warning #552-D: variable "g_ucPdlibStatus" was set but never used
 'Finished building: ../pdlib_nrf24l01.c'
 ' '
 'Building target: pdlib_nrf24l01_test.out'
 'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
-<Linking>
-'Finished building target: pdlib_nrf24l01_test.out'
-' '
-
-**** Build Finished ****
-
-**** Build of configuration Debug for project pdlib_nrf24l01_test ****
-
-"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
-'Building file: ../pdlib_nrf24l01.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
-'Finished building: ../pdlib_nrf24l01.c'
-' '
-'Building target: pdlib_nrf24l01_test.out'
-'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=100 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./uart_debug.obj" "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
 <Linking>
 'Finished building target: pdlib_nrf24l01_test.out'
 ' '
@@ -71,13 +35,14 @@
 'Building file: ../main.c'
 'Invoking: ARM Compiler'
 "F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="main.pp"  "../main.c"
-"../main.c", line 44: warning #112-D: statement is unreachable
-"../main.c", line 17: warning #552-D: variable "ucStatus" was set but never used
+"../main.c", line 37: warning #112-D: statement is unreachable
+"../main.c", line 17: warning #179-D: variable "ucStatus" was declared but never referenced
+"../main.c", line 18: warning #179-D: variable "address" was declared but never referenced
 'Finished building: ../main.c'
 ' '
 'Building target: pdlib_nrf24l01_test.out'
 'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=100 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./uart_debug.obj" "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
 <Linking>
 'Finished building target: pdlib_nrf24l01_test.out'
 ' '
@@ -87,20 +52,72 @@
 **** Build of configuration Debug for project pdlib_nrf24l01_test ****
 
 "F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
-'Building file: ../pdlib_nrf24l01.c'
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+gmake: Nothing to be done for `all'.
+
+**** Build Finished ****
+
+**** Build of configuration Debug for project pdlib_nrf24l01_test ****
+
+"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
+'Building file: ../main.c'
 'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
-'Finished building: ../pdlib_nrf24l01.c'
-' '
-'Building file: ../pdlib_spi.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_spi.pp"  "../pdlib_spi.c"
-'Finished building: ../pdlib_spi.c'
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="main.pp"  "../main.c"
+"../main.c", line 39: warning #112-D: statement is unreachable
+"../main.c", line 17: warning #179-D: variable "ucStatus" was declared but never referenced
+'Finished building: ../main.c'
 ' '
 'Building target: pdlib_nrf24l01_test.out'
 'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=100 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./uart_debug.obj" "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
 <Linking>
 'Finished building target: pdlib_nrf24l01_test.out'
 ' '
@@ -113,37 +130,22 @@
 'Building file: ../main.c'
 'Invoking: ARM Compiler'
 "F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="main.pp"  "../main.c"
-"../main.c", line 35: warning #112-D: statement is unreachable
-"../main.c", line 17: warning #552-D: variable "ucStatus" was set but never used
+"../main.c", line 39: warning #112-D: statement is unreachable
+"../main.c", line 17: warning #179-D: variable "ucStatus" was declared but never referenced
 'Finished building: ../main.c'
 ' '
 'Building file: ../pdlib_nrf24l01.c'
 'Invoking: ARM Compiler'
 "F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
+"../pdlib_nrf24l01.c", line 152: warning #552-D: variable "ucReg" was set but never used
+"../pdlib_nrf24l01.c", line 920: warning #174-D: external/internal linkage conflict with previous declaration
+"../pdlib_nrf24l01.c", line 956: warning #174-D: external/internal linkage conflict with previous declaration
+"../pdlib_nrf24l01.c", line 64: warning #552-D: variable "g_ucPdlibStatus" was set but never used
 'Finished building: ../pdlib_nrf24l01.c'
 ' '
 'Building target: pdlib_nrf24l01_test.out'
 'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
-<Linking>
-'Finished building target: pdlib_nrf24l01_test.out'
-' '
-
-**** Build Finished ****
-
-**** Build of configuration Debug for project pdlib_nrf24l01_test ****
-
-"F:\\ti\\ccsv5\\utils\\bin\\gmake" -k all 
-'Building file: ../pdlib_nrf24l01.c'
-'Invoking: ARM Compiler'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --include_path="F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --include_path="F:/StellarisWare" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/common" --include_path="F:/Other/Nrf24l01/Stellaris library/pdlib_nrf24l01/git/pdlib_nrf24l01/arm/stellaris_lm4f120h5qr" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off --preproc_with_compile --preproc_dependency="pdlib_nrf24l01.pp"  "../pdlib_nrf24l01.c"
-"../pdlib_nrf24l01.c", line 61: warning #552-D: variable "g_ucPdlibStatus" was set but never used
-'Finished building: ../pdlib_nrf24l01.c'
-' '
-'Building target: pdlib_nrf24l01_test.out'
-'Invoking: ARM Linker'
-"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=0 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
+"F:/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --define=PDLIB_SPI --diag_warning=225 --display_error_number --diag_wrap=off -z --stack_size=256 -m"pdlib_nrf24l01_test.map" --heap_size=100 -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"F:/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --rom_model -o "pdlib_nrf24l01_test.out"  "./uart_debug.obj" "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
 <Linking>
 'Finished building target: pdlib_nrf24l01_test.out'
 ' '

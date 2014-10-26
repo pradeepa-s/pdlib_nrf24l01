@@ -73,4 +73,11 @@
 		<item value="433" key="DIALOG_X_ORIGIN"/>
 		<item value="false" key="TOGGLE_SELECTED"/>
 	</section>
+	<section name="NewWizardAction">
+		<item value="com.ti.ccstudio.project.ui.wizards.project.NewCCSProjectWizard" key="NewWizardSelectionPage.STORE_SELECTED_ID"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.cdt.ui.newCWizards"/>
+			<item value="com.ti.common.ui.new"/>
+		</list>
+	</section>
 </section>

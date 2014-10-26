@@ -1,35 +1,34 @@
 ******************************************************************************
                   TI ARM Linker PC v5.0.1                      
 ******************************************************************************
->> Linked Sun Aug 03 18:05:06 2014
+>> Linked Sun Oct 26 15:26:47 2014
 
 OUTPUT FILE NAME:   <pdlib_nrf24l01_test.out>
-ENTRY POINT SYMBOL: "_c_int00"  address: 0000100d
+ENTRY POINT SYMBOL: "_c_int00"  address: 0000122d
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  000012d0  0003ed30  R  X
-  SRAM                  20000000   00008000  0000023b  00007dc5  RW X
+  FLASH                 00000000   00040000  000014c1  0003eb3f  R  X
+  SRAM                  20000000   00008000  00000297  00007d69  RW X
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    000012d0   000012d0    r-x
-  00000000    00000000    00001170   00001170    r-x .text
-  00001170    00001170    00000120   00000120    r-- .const
-  00001290    00001290    00000040   00000040    r-- .cinit
-20000000    20000000    00000214   00000000    rw-
+00000000    00000000    000014c8   000014c8    r-x
+  00000000    00000000    00001350   00001350    r-x .text
+  00001350    00001350    00000131   00000131    r-- .const
+  00001488    00001488    00000040   00000040    r-- .cinit
+20000000    20000000    0000027c   00000000    rw-
   20000000    20000000    00000112   00000000    rw- .bss
   20000114    20000114    00000100   00000000    rw- .stack
-20000214    20000214    00000021   00000021    rw-
-  20000214    20000214    00000021   00000021    rw- .data
-20000238    20000238    00000008   00000000    rw-
-  20000238    20000238    00000008   00000000    rw- .sysmem
+  20000218    20000218    00000064   00000000    rw- .sysmem
+2000027c    2000027c    00000021   00000021    rw-
+  2000027c    2000027c    00000021   00000021    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -37,37 +36,40 @@ SECTION ALLOCATION MAP
  output                                  attributes/
 section   page    origin      length       input sections
 --------  ----  ----------  ----------   ----------------
-.text      0    00000000    00001170     
-                  00000000    000004c4     pdlib_nrf24l01.obj (.text)
-                  000004c4    000003d8     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.text)
-                  0000089c    000002cc     pdlib_spi.obj (.text)
-                  00000b68    000001d8     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlClockGet)
-                  00000d40    0000013c                        : sysctl.obj (.text:SysCtlClockSet)
-                  00000e7c    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.obj (.text)
-                  00000f18    00000094                                   : auto_init.obj (.text)
-                  00000fac    0000005e                                   : copy_decompress_rle.obj (.text)
-                  0000100a    00000002     --HOLE-- [fill = 0]
-                  0000100c    00000048                                   : boot.obj (.text)
-                  00001054    00000044                                   : cpy_tbl.obj (.text)
-                  00001098    00000040     main.obj (.text)
-                  000010d8    00000040     rtsv7M4_T_le_v4SPD16_eabi.lib : exit.obj (.text)
-                  00001118    00000018                                   : args_main.obj (.text)
-                  00001130    00000014                                   : _lock.obj (.text)
-                  00001144    00000012                                   : copy_zero_init.obj (.text:decompress:ZI)
-                  00001156    0000000e                                   : copy_decompress_none.obj (.text:decompress:none)
-                  00001164    00000006     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlDelay)
-                  0000116a    00000006     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_rle.obj (.text:decompress:rle24)
+.text      0    00000000    00001350     
+                  00000000    000006e8     pdlib_nrf24l01.obj (.text)
+                  000006e8    000003d8     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.text)
+                  00000ac0    0000026c     pdlib_spi.obj (.text)
+                  00000d2c    000001d8     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlClockGet)
+                  00000f04    0000013c                        : sysctl.obj (.text:SysCtlClockSet)
+                  00001040    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.obj (.text)
+                  000010dc    00000094                                   : auto_init.obj (.text)
+                  00001170    0000005e                                   : copy_decompress_rle.obj (.text)
+                  000011ce    00000002     --HOLE-- [fill = 0]
+                  000011d0    0000005c     main.obj (.text)
+                  0000122c    00000048     rtsv7M4_T_le_v4SPD16_eabi.lib : boot.obj (.text)
+                  00001274    00000044                                   : cpy_tbl.obj (.text)
+                  000012b8    00000040                                   : exit.obj (.text)
+                  000012f8    00000018                                   : args_main.obj (.text)
+                  00001310    00000014                                   : _lock.obj (.text)
+                  00001324    00000012                                   : copy_zero_init.obj (.text:decompress:ZI)
+                  00001336    0000000e                                   : copy_decompress_none.obj (.text:decompress:none)
+                  00001344    00000006     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlDelay)
+                  0000134a    00000006     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_rle.obj (.text:decompress:rle24)
 
-.const     0    00001170    00000120     
-                  00001170    0000008c     pdlib_spi.obj (.const:g_GPIOConfigure)
-                  000011fc    0000006c     driverlib-cm4f.lib : sysctl.obj (.const:g_pulXtals)
-                  00001268    00000028     pdlib_spi.obj (.const:g_SSIModule)
+.const     0    00001350    00000131     
+                  00001350    0000008c     pdlib_spi.obj (.const:g_GPIOConfigure)
+                  000013dc    0000006c     driverlib-cm4f.lib : sysctl.obj (.const:g_pulXtals)
+                  00001448    00000028     pdlib_spi.obj (.const:g_SSIModule)
+                  00001470    0000000a     pdlib_nrf24l01.obj (.const:.string)
+                  0000147a    00000002     --HOLE-- [fill = 0]
+                  0000147c    00000005     main.obj (.const:.string)
 
-.cinit     0    00001290    00000040     
-                  00001290    0000001c     (.cinit..data.load) [load image, compression = rle]
-                  000012ac    0000000c     (__TI_handler_table)
-                  000012b8    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  000012c0    00000010     (__TI_cinit_table)
+.cinit     0    00001488    00000040     
+                  00001488    0000001c     (.cinit..data.load) [load image, compression = rle]
+                  000014a4    0000000c     (__TI_handler_table)
+                  000014b0    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  000014b8    00000010     (__TI_cinit_table)
 
 .bss       0    20000000    00000112     UNINITIALIZED
                   20000000    00000100     pdlib_spi.obj (.bss:g_plRxData)
@@ -76,27 +78,28 @@ section   page    origin      length       input sections
 .stack     0    20000114    00000100     UNINITIALIZED
                   20000114    00000100     --HOLE--
 
-.data      0    20000214    00000021     
-                  20000214    0000000c     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.data)
-                  20000220    00000008                                   : _lock.obj (.data)
-                  20000228    00000008                                   : exit.obj (.data)
-                  20000230    00000004                                   : stkdepth_vars.obj (.data)
-                  20000234    00000001     pdlib_spi.obj (.data)
+.sysmem    0    20000218    00000064     UNINITIALIZED
+                  20000218    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.sysmem)
+                  20000220    0000005c     --HOLE--
 
-.sysmem    0    20000238    00000008     UNINITIALIZED
-                  20000238    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.sysmem)
+.data      0    2000027c    00000021     
+                  2000027c    0000000c     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.data)
+                  20000288    00000008                                   : _lock.obj (.data)
+                  20000290    00000008                                   : exit.obj (.data)
+                  20000298    00000004                                   : stkdepth_vars.obj (.data)
+                  2000029c    00000001     pdlib_spi.obj (.data)
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 000012c0 records: 2, size/record: 8, table size: 16
-	.data: load addr=00001290, load size=0000001c bytes, run addr=20000214, run size=00000021 bytes, compression=rle
-	.bss: load addr=000012b8, load size=00000008 bytes, run addr=20000000, run size=00000112 bytes, compression=zero_init
+__TI_cinit_table @ 000014b8 records: 2, size/record: 8, table size: 16
+	.data: load addr=00001488, load size=0000001c bytes, run addr=2000027c, run size=00000021 bytes, compression=rle
+	.bss: load addr=000014b0, load size=00000008 bytes, run addr=20000000, run size=00000112 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 000012ac records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 000014a4 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_rle24
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -106,81 +109,84 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 address    name
 --------   ----
-000010d9   C$$EXIT
-00000181   NRF24L01_EnableRxMode
-000001a9   NRF24L01_EnableTxMode
-000002a1   NRF24L01_ExecuteCommand
-00000173   NRF24L01_FlushRX
-00000165   NRF24L01_FlushTX
-000001ed   NRF24L01_GetRxDataAmount
-00000077   NRF24L01_GetStatus
+000012b9   C$$EXIT
+000002e5   NRF24L01_EnableRxMode
+00000311   NRF24L01_EnableTxMode
+00000483   NRF24L01_ExecuteCommand
+000002c1   NRF24L01_FlushRX
+000002ad   NRF24L01_FlushTX
+00000399   NRF24L01_GetRxDataAmount
+00000189   NRF24L01_GetStatus
 00000001   NRF24L01_Init
-000001d1   NRF24L01_IsDataReadyRx
-00000119   NRF24L01_PowerDown
-00000141   NRF24L01_PowerUp
-00000075   NRF24L01_RegisterInit
-00000481   NRF24L01_RegisterRead_8
-00000085   NRF24L01_SetAirDataRate
-000000ef   NRF24L01_SetLNAGain
-000000c3   NRF24L01_SetPAGain
-000000b1   NRF24L01_SetRFChannel
-00000229   NRF24L01_SetRxAddress
-00000219   NRF24L01_SetTXAddress
-0000026d   NRF24L01_SetTxPayload
+00000361   NRF24L01_IsDataReadyRx
+0000037d   NRF24L01_IsTxFifoFull
+00000261   NRF24L01_PowerDown
+00000289   NRF24L01_PowerUp
+00000077   NRF24L01_RegisterInit
+00000655   NRF24L01_RegisterRead_8
+0000067f   NRF24L01_RegisterRead_Multi
+00000197   NRF24L01_SetAirDataRate
+00000237   NRF24L01_SetLNAGain
+000001df   NRF24L01_SetPAGain
+000001cd   NRF24L01_SetRFChannel
+00000415   NRF24L01_SetRxAddress
+000003c5   NRF24L01_SetTXAddress
+0000045d   NRF24L01_SetTxPayload
+000003d5   NRF24L01_WaitForTxComplete
 UNDEFED    SHT$$INIT_ARRAY$$Base
 UNDEFED    SHT$$INIT_ARRAY$$Limit
-00000b69   SysCtlClockGet
-00000d41   SysCtlClockSet
-00001165   SysCtlDelay
+00000d2d   SysCtlClockGet
+00000f05   SysCtlClockSet
+00001345   SysCtlDelay
 20000214   __STACK_END
 00000100   __STACK_SIZE
 20000214   __STACK_TOP
-00000008   __SYSMEM_SIZE
-000012c0   __TI_CINIT_Base
-000012d0   __TI_CINIT_Limit
-000012ac   __TI_Handler_Table_Base
-000012b8   __TI_Handler_Table_Limit
+00000064   __SYSMEM_SIZE
+000014b8   __TI_CINIT_Base
+000014c8   __TI_CINIT_Limit
+000014a4   __TI_Handler_Table_Base
+000014b0   __TI_Handler_Table_Limit
 00000001   __TI_args_main
-00000f19   __TI_auto_init
-00001157   __TI_decompress_none
-0000116b   __TI_decompress_rle24
+000010dd   __TI_auto_init
+00001337   __TI_decompress_none
+0000134b   __TI_decompress_rle24
 00000000   __TI_static_base__
-00001145   __TI_zero_init
-00000e7d   __aeabi_memcpy
-00000e7d   __aeabi_memcpy4
-00000e7d   __aeabi_memcpy8
+00001325   __TI_zero_init
+00001041   __aeabi_memcpy
+00001041   __aeabi_memcpy4
+00001041   __aeabi_memcpy8
 ffffffff   __binit__
 ffffffff   __c_args__
 20000114   __stack
-00001119   _args_main
-0000100d   _c_int00
-20000228   _cleanup_ptr
-2000022c   _dtors_ptr
-20000220   _lock
-0000113f   _nop
-00001137   _register_lock
-00001131   _register_unlock
-20000238   _sys_memory
-20000224   _unlock
-000010dd   abort
+000012f9   _args_main
+0000122d   _c_int00
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000288   _lock
+0000131f   _nop
+00001317   _register_lock
+00001311   _register_unlock
+20000218   _sys_memory
+2000028c   _unlock
+000012bd   abort
 ffffffff   binit
-0000085d   calloc
-00001055   copy_in
-000010e5   exit
-000005b3   free
+00000a81   calloc
+00001275   copy_in
+000012c5   exit
+000007d7   free
 20000000   g_plRxData
-00001099   main
-20000230   main_func_sp
-00000551   malloc
-00000787   memalign
-00000e7d   memcpy
-000004c5   minit
-0000089d   pdlibSPI_ConfigureSPIInterface
-00000ad3   pdlibSPI_ReceiveDataBlocking
-00000b01   pdlibSPI_ReceiveDataNonBlocking
-000009d1   pdlibSPI_SendData
-00000a65   pdlibSPI_TransferByte
-0000067d   realloc
+000011d1   main
+20000298   main_func_sp
+00000775   malloc
+000009ab   memalign
+00001041   memcpy
+000006e9   minit
+00000ac1   pdlibSPI_ConfigureSPIInterface
+00000c9f   pdlibSPI_ReceiveDataBlocking
+00000cbf   pdlibSPI_ReceiveDataNonBlocking
+00000bf5   pdlibSPI_SendData
+00000c31   pdlibSPI_TransferByte
+000008a1   realloc
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -190,77 +196,80 @@ address    name
 00000000   __TI_static_base__
 00000001   NRF24L01_Init
 00000001   __TI_args_main
-00000008   __SYSMEM_SIZE
-00000075   NRF24L01_RegisterInit
-00000077   NRF24L01_GetStatus
-00000085   NRF24L01_SetAirDataRate
-000000b1   NRF24L01_SetRFChannel
-000000c3   NRF24L01_SetPAGain
-000000ef   NRF24L01_SetLNAGain
+00000064   __SYSMEM_SIZE
+00000077   NRF24L01_RegisterInit
 00000100   __STACK_SIZE
-00000119   NRF24L01_PowerDown
-00000141   NRF24L01_PowerUp
-00000165   NRF24L01_FlushTX
-00000173   NRF24L01_FlushRX
-00000181   NRF24L01_EnableRxMode
-000001a9   NRF24L01_EnableTxMode
-000001d1   NRF24L01_IsDataReadyRx
-000001ed   NRF24L01_GetRxDataAmount
-00000219   NRF24L01_SetTXAddress
-00000229   NRF24L01_SetRxAddress
-0000026d   NRF24L01_SetTxPayload
-000002a1   NRF24L01_ExecuteCommand
-00000481   NRF24L01_RegisterRead_8
-000004c5   minit
-00000551   malloc
-000005b3   free
-0000067d   realloc
-00000787   memalign
-0000085d   calloc
-0000089d   pdlibSPI_ConfigureSPIInterface
-000009d1   pdlibSPI_SendData
-00000a65   pdlibSPI_TransferByte
-00000ad3   pdlibSPI_ReceiveDataBlocking
-00000b01   pdlibSPI_ReceiveDataNonBlocking
-00000b69   SysCtlClockGet
-00000d41   SysCtlClockSet
-00000e7d   __aeabi_memcpy
-00000e7d   __aeabi_memcpy4
-00000e7d   __aeabi_memcpy8
-00000e7d   memcpy
-00000f19   __TI_auto_init
-0000100d   _c_int00
-00001055   copy_in
-00001099   main
-000010d9   C$$EXIT
-000010dd   abort
-000010e5   exit
-00001119   _args_main
-00001131   _register_unlock
-00001137   _register_lock
-0000113f   _nop
-00001145   __TI_zero_init
-00001157   __TI_decompress_none
-00001165   SysCtlDelay
-0000116b   __TI_decompress_rle24
-000012ac   __TI_Handler_Table_Base
-000012b8   __TI_Handler_Table_Limit
-000012c0   __TI_CINIT_Base
-000012d0   __TI_CINIT_Limit
+00000189   NRF24L01_GetStatus
+00000197   NRF24L01_SetAirDataRate
+000001cd   NRF24L01_SetRFChannel
+000001df   NRF24L01_SetPAGain
+00000237   NRF24L01_SetLNAGain
+00000261   NRF24L01_PowerDown
+00000289   NRF24L01_PowerUp
+000002ad   NRF24L01_FlushTX
+000002c1   NRF24L01_FlushRX
+000002e5   NRF24L01_EnableRxMode
+00000311   NRF24L01_EnableTxMode
+00000361   NRF24L01_IsDataReadyRx
+0000037d   NRF24L01_IsTxFifoFull
+00000399   NRF24L01_GetRxDataAmount
+000003c5   NRF24L01_SetTXAddress
+000003d5   NRF24L01_WaitForTxComplete
+00000415   NRF24L01_SetRxAddress
+0000045d   NRF24L01_SetTxPayload
+00000483   NRF24L01_ExecuteCommand
+00000655   NRF24L01_RegisterRead_8
+0000067f   NRF24L01_RegisterRead_Multi
+000006e9   minit
+00000775   malloc
+000007d7   free
+000008a1   realloc
+000009ab   memalign
+00000a81   calloc
+00000ac1   pdlibSPI_ConfigureSPIInterface
+00000bf5   pdlibSPI_SendData
+00000c31   pdlibSPI_TransferByte
+00000c9f   pdlibSPI_ReceiveDataBlocking
+00000cbf   pdlibSPI_ReceiveDataNonBlocking
+00000d2d   SysCtlClockGet
+00000f05   SysCtlClockSet
+00001041   __aeabi_memcpy
+00001041   __aeabi_memcpy4
+00001041   __aeabi_memcpy8
+00001041   memcpy
+000010dd   __TI_auto_init
+000011d1   main
+0000122d   _c_int00
+00001275   copy_in
+000012b9   C$$EXIT
+000012bd   abort
+000012c5   exit
+000012f9   _args_main
+00001311   _register_unlock
+00001317   _register_lock
+0000131f   _nop
+00001325   __TI_zero_init
+00001337   __TI_decompress_none
+00001345   SysCtlDelay
+0000134b   __TI_decompress_rle24
+000014a4   __TI_Handler_Table_Base
+000014b0   __TI_Handler_Table_Limit
+000014b8   __TI_CINIT_Base
+000014c8   __TI_CINIT_Limit
 20000000   g_plRxData
 20000114   __stack
 20000214   __STACK_END
 20000214   __STACK_TOP
-20000220   _lock
-20000224   _unlock
-20000228   _cleanup_ptr
-2000022c   _dtors_ptr
-20000230   main_func_sp
-20000238   _sys_memory
+20000218   _sys_memory
+20000288   _lock
+2000028c   _unlock
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000298   main_func_sp
 ffffffff   __binit__
 ffffffff   __c_args__
 ffffffff   binit
 UNDEFED    SHT$$INIT_ARRAY$$Base
 UNDEFED    SHT$$INIT_ARRAY$$Limit
 
-[75 symbols]
+[78 symbols]

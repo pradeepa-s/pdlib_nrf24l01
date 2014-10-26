@@ -15,19 +15,25 @@
 int main(void) {
 	
 	unsigned char ucStatus;
+	unsigned char address[5] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01};
+
+	unsigned char buf[5];
 
 	/* PS: Set the clock frequency of the processor */
 	SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ | SYSCTL_SYSDIV_5);
 
 	/* PS: Initialize the module, need to provide CE pin, CSN pin and SSI module information */
-	NRF24L01_Init(GPIO_PORTE_BASE,GPIO_PIN_1, GPIO_PORTE_BASE, GPIO_PIN_2, 0x03);
+	NRF24L01_Init(GPIO_PORTE_BASE,GPIO_PIN_1, SYSCTL_PERIPH_GPIOE, GPIO_PORTE_BASE, GPIO_PIN_2, SYSCTL_PERIPH_GPIOE, 0x03);
+
+	NRF24L01_RegisterRead_Multi(0x10,buf,5);
+
+	NRF24L01_SetTXAddress(address);
+
+	NRF24L01_RegisterRead_Multi(0x10,buf,5);
 
 	while(1)
 	{
-		NRF24L01_PowerUp();
-		ucStatus = NRF24L01_RegisterRead_8(0x00);
-		NRF24L01_PowerDown();
-		ucStatus = NRF24L01_RegisterRead_8(0x00);
+
 	}
 
 	return 0;
