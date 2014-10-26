@@ -114,7 +114,7 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 		/* Configure SSI */
 		ROM_SSIClockSourceSet(g_SSIModule[ucSSI][SSIBASE], SSI_CLOCK_SYSTEM);
 		ROM_SSIConfigSetExpClk(g_SSIModule[ucSSI][SSIBASE], SysCtlClockGet(), SSI_FRF_MOTO_MODE_0,
-								SSI_MODE_MASTER, 8000000, 8);
+								SSI_MODE_MASTER, 500000, 8);
 		ROM_SSIEnable(g_SSIModule[ucSSI][SSIBASE]);
 		
 		/* Clear initial data */
@@ -159,17 +159,7 @@ pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 #ifdef PART_LM4F120H5QR
 			while(iIndex < uiLength)
 			{
-				//ulData = pcData;
-				ROM_SSIDataPut(g_SSIModule[g_SSI][SSIBASE], pucData[iIndex++]);
-
-				/* Wait until current transmission is over */
-				while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
-
-				/* PS: Clear TX buffer */
-				ROM_SSIDataGet(g_SSIModule[g_SSI][SSIBASE], &ulRxData);
-
-				/* Wait until current transmission is over */
-				while(ROM_SSIBusy(g_SSIModule[g_SSI][SSIBASE]));
+				pdlibSPI_TransferByte(pucData[iIndex++]);
 			}
 #endif
 	}
