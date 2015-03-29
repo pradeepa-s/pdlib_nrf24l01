@@ -151,7 +151,6 @@ pdlibSPI_ConfigureSPIInterface(unsigned char ucSSI)
 int
 pdlibSPI_SendData(unsigned char *pucData, unsigned int uiLength)
 {
-	unsigned long ulRxData;
 	int iIndex = 0;
 	/* Validate parameters */
 	if((pucData != NULL) && (uiLength > 0) && (g_SSI < 5))
