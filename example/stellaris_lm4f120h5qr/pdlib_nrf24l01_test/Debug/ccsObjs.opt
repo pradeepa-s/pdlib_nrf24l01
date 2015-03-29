@@ -1,0 +1,1 @@
+"./uart_debug.obj" "./pdlib_spi.obj" "./pdlib_nrf24l01.obj" "./main.obj" -l"libc.a" -l"F:\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
