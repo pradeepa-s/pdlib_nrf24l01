@@ -18,6 +18,57 @@
  * 
  * 	
  * =====================================================================
+ * 	USAGE TX (Simplest) Steps:
+ * =====================================================================
+ *
+ * Version: 1.01
+ *
+ * [1]. Define the processor type
+ * 				Support: PART_LM4F120H5QR
+ *
+ * [2]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
+ * [3]. Call NRF24L01_SendData() or NRF24L01_SendDataTo() to send data. (TX and RX data sizes should match) - Dynamic payload not supported
+ *
+ *
+ * =====================================================================
+ * 	USAGE RX (Simplest) Steps:
+ * =====================================================================
+ *
+ * Version: 1.01
+ *
+ * [1]. Define the processor type
+ * 				Support: PART_LM4F120H5QR
+ *
+ * [2]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
+ * [3]. Set the RX packet size for required pipe using NRF24L01_SetRXPacketSize()
+ * [4]. Wait for data using NRF24L01_WaitForDataRx()
+ * [5]. Get the amount of received data using NRF24L01_GetRxDataAmount()
+ * [6]. Get the received data using NRF24L01_GetData()
+ *
+ *
+ * =====================================================================
+ * Change Log
+ * =====================================================================
+ *
+ * Version: 1.01
+ *
+ * [1]. Initial release.
+ * [2]. Contains function support to change all the basic settings.
+ * [3]. Supports LM4F120H5QR processor. (Stellaris-launchpad)
+ * [4]. Three function levels defined, Simple, Average and Advanced
+ * [5]. All the functions are polling based.
+ *
+ * =====================================================================
+ * Known Issues
+ * =====================================================================
+ *
+ * Version: 1.01
+ *
+ * [1]. Interrupt support is not added.
+ * [2]. Dynamic payload support is not added.
+ * [3]. Auto ACK with payload support is not added
+ *
+ * =====================================================================
  * LM4F120H5QR (Stellaris)
  * =====================================================================
  * 
@@ -40,17 +91,14 @@
 #include "pdlib_nrf24l01.h"
 #include "pdlib_spi.h"
 
+#include "uart_debug.h"
 
 static void _NRF24L01_CEHigh();
 static void _NRF24L01_CELow();
 	
-	
-	
-	
+
 static void _NRF24L01_CSNHigh();
 static void _NRF24L01_CSNLow();
-static void _NRF24L01_SendCommand(unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength);
-
 
 #define TYPE_RX		0x01
 #define TYPE_TX		0x02
@@ -61,7 +109,6 @@ static unsigned long g_ulCSNPin;
 static unsigned long g_ulCSNBase;
 
 static unsigned char g_ucStatus;
-static unsigned char g_ucPdlibStatus;
 
 
 /* PS:
@@ -86,7 +133,7 @@ static unsigned char g_ucPdlibStatus;
  * 					We cannot use the CSN pin (ie. FSS) in the SSI module
  * 					because we need to keep it LOW throughout the data
  * 					transmission. (ie: Write and Read passes) Therefore
- * 					a different pin should be confiured for this purpose
+ * 					a different pin should be configured for this purpose
  * 
  */
  	
@@ -102,7 +149,7 @@ NRF24L01_Init(	unsigned long ulCEBase,
 				unsigned long ulCSNPeriph,
 				unsigned char ucSSIIndex)
 {
-	g_ucPdlibStatus = 0x00;
+	//g_ucPdlibStatus = 0x00;
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
 	pdlibSPI_ConfigureSPIInterface(ucSSIIndex);
@@ -130,7 +177,7 @@ NRF24L01_Init(	unsigned long ulCEBase,
 
 	NRF24L01_RegisterInit();
 
-	g_ucPdlibStatus = 0x01;
+	//g_ucPdlibStatus = 0x01;
 }
 
 #endif
@@ -152,24 +199,15 @@ NRF24L01_RegisterInit()
 {
 	unsigned char ucRxAddr1[5] = {0xE7,0xE7,0xE7,0xE7,0xE7};
 	unsigned char ucRxAddr2[5] = {0xC2,0xC2,0xC2,0xC2,0xC2};
-	unsigned char ucReg;
 	
 	NRF24L01_FlushTX();
 	NRF24L01_FlushRX();
 
 	_NRF24L01_CELow();
+
 	NRF24L01_RegisterWrite_8(RF24_CONFIG,0x09);
-
-	ucReg = NRF24L01_RegisterRead_8(RF24_CONFIG);
-
 	NRF24L01_RegisterWrite_8(RF24_EN_AA,0x3F);
-
-	ucReg = NRF24L01_RegisterRead_8(RF24_EN_AA);
-
 	NRF24L01_RegisterWrite_8(RF24_EN_RXADDR,0x03);
-
-	ucReg = NRF24L01_RegisterRead_8(RF24_EN_RXADDR);
-
 	NRF24L01_RegisterWrite_8(RF24_SETUP_AW,0x03);
 	NRF24L01_RegisterWrite_8(RF24_SETUP_RETR,0x03);
 	NRF24L01_RegisterWrite_8(RF24_RF_CH,0x02);
@@ -191,25 +229,6 @@ NRF24L01_RegisterInit()
 	NRF24L01_RegisterWrite_8(RF24_RX_PW_P5,0x00);
 	NRF24L01_RegisterWrite_8(RF24_DYNPD,0x00);
 	NRF24L01_RegisterWrite_8(RF24_FEATURE,0x00);
-
-
-/*	_NRF24L01_CELow();
-	NRF24L01_RegisterWrite_8(RF24_CONFIG,0x08);
-	NRF24L01_RegisterWrite_8(RF24_EN_AA,0x3F);
-	NRF24L01_RegisterWrite_8(RF24_EN_RXADDR,0x03);
-	NRF24L01_RegisterWrite_8(RF24_SETUP_AW,0x03);
-	NRF24L01_RegisterWrite_8(RF24_SETUP_RETR,0x9F);
-	NRF24L01_RegisterWrite_8(RF24_RF_CH,0x02);
-	NRF24L01_RegisterWrite_8(RF24_RF_SETUP,0x0F);
-	NRF24L01_RegisterWrite_8(RF24_STATUS,0x70);
-	NRF24L01_RegisterWrite_8(RF24_DYNPD,0x03);
-	NRF24L01_RegisterWrite_8(RF24_CD, 0x00);
-	NRF24L01_RegisterWrite_8(RF24_FEATURE,RF24_EN_DPL);*/
-
-	//NRF24L01_SetRFChannel(0);
-	//NRF24L01_SetAirDataRate(0);
-	//NRF24L01_SetPAGain(0);
-
 }
 
 /* PS:
@@ -251,7 +270,13 @@ NRF24L01_SetAirDataRate(unsigned char ucDataRate)
 
 	ucDataRate--;	// 0 for 1 Mbps, 1 for 2 Mbps
 
-	ucCurrentVal |= (ucDataRate << 3);
+	if(ucDataRate)
+	{
+		ucCurrentVal |= (ucDataRate << 3);
+	}else
+	{
+		ucCurrentVal &= ~(ucDataRate << 3);
+	}
 	
 	NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
 }
@@ -318,7 +343,13 @@ NRF24L01_SetPAGain(int iPAGain)
 
 	iPAGain = 3 - (-1*(iPAGain) / 6);
 
-	ucCurrentVal |= ((iPAGain && 0x03) << 1);
+	if(ucCurrentVal)
+	{
+		ucCurrentVal |= ((iPAGain && 0x03) << 1);
+	}else
+	{
+		ucCurrentVal &= ~((iPAGain && 0x03) << 1);
+	}
 	
 	NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
 } 
@@ -341,10 +372,113 @@ void
 NRF24L01_SetLNAGain(unsigned char ucLNAGain)
 {
 	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_RF_SETUP);
-	ucCurrentVal |= (ucLNAGain << 0);
 	
+	if(ucCurrentVal)
+	{
+		ucCurrentVal |= (ucLNAGain << 0);
+	}else
+	{
+		ucCurrentVal &= ~(ucLNAGain << 0);
+	}
+
 	NRF24L01_RegisterWrite_8(RF24_RF_SETUP, ucCurrentVal);
 }
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SetARC
+ *
+ * Arguments	: 	val			:	Minimum is 0(disbaled), Maximum is 15.
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Set automatic retransmission count.
+ *
+ */
+void NRF24L01_SetARC(unsigned char val){
+	unsigned char cur_val = 0;
+
+	if(val > 15){
+		val = 15;
+	}
+
+	val &= 0x0F;
+
+	cur_val = NRF24L01_RegisterRead_8(RF24_SETUP_RETR);
+	cur_val &= 0xF0;
+	cur_val |= val;
+	NRF24L01_RegisterWrite_8(RF24_SETUP_RETR, cur_val);
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SetARD
+ *
+ * Arguments	: 	usVal		:	Minimum is 250, Maximum is 4000. (in microseconds)
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Value should be a multiple of 250. If the input value is not
+ * 					a multiple of 250. It will be rounded up to the nearest 250 multiple.
+ *
+ */
+void NRF24L01_SetARD(unsigned short usVal){
+
+	unsigned char reg_val = 0;
+	unsigned char cur_val = 0;
+
+	if(usVal < 250){
+		usVal = 250;
+	}
+
+	// 250 - 0x0000
+	// 500 - 0x0001
+	// ...
+	// 4000 - 0x1111
+	usVal = ((usVal / 250) - 1);
+
+	reg_val = ((usVal << 4) & 0xF0);
+
+	cur_val = NRF24L01_RegisterRead_8(RF24_SETUP_RETR);
+	cur_val &= 0x0F;
+	cur_val |= reg_val;
+	NRF24L01_RegisterWrite_8(RF24_SETUP_RETR, cur_val);
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SetAddressWidth
+ *
+ * Arguments	: 	ucVal		:	Minimum 3, Maximum 5
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Set the address width for TX/RX address
+ *
+ */
+void NRF24L01_SetAddressWidth(unsigned char ucVal){
+	unsigned char ucWidth = 3;
+
+	if(ucVal > 5){
+		ucWidth = 5;
+	}else if(ucVal < 3){
+		ucWidth = 3;
+	}else{
+		ucWidth = ucVal;
+	}
+
+	// 3 - 0x01
+	// 4 - 0x10
+	// 5 - 0x11
+
+	ucWidth -= 2;
+
+	NRF24L01_RegisterWrite_8(RF24_SETUP_AW, ucWidth);
+}
+
 
 
 /* PS:
@@ -406,7 +540,8 @@ NRF24L01_PowerUp()
 void
 NRF24L01_FlushTX()
 {
-	_NRF24L01_SendCommand(RF24_FLUSH_TX, NULL, 0);
+	NRF24L01_SendCommand(RF24_FLUSH_TX, NULL, 0);
+	PrintString("TX buffer flushed \n\r");
 }
 
 
@@ -425,7 +560,7 @@ NRF24L01_FlushTX()
 void
 NRF24L01_FlushRX()
 {
-	_NRF24L01_SendCommand(RF24_FLUSH_RX, NULL, 0);
+	NRF24L01_SendCommand(RF24_FLUSH_RX, NULL, 0);
 }
 
 
@@ -437,20 +572,46 @@ NRF24L01_FlushRX()
  * 
  * Return		: 	None
  * 
- * Description	: 	Put the module into RX mode
+ * Description	: 	Put the module into RX mode and powers up the module
  * 
  */
 
 void
 NRF24L01_EnableRxMode()
 {
-	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
-	ucCurrentVal |= (RF24_PRIM_RX);
+	unsigned char ucCurrentVal = NRF24L01_GetStatus();
+
+	NRF24L01_PowerUp();
+
+	// PS: Clear RX_DR interrupt
+	ucCurrentVal |= RF24_RX_DR;
+	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
+
+	ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
+	ucCurrentVal |= (RF24_PRIM_RX | RF24_PWR_UP);
 	
 	NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
 	
 	_NRF24L01_CEHigh();
 }
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_DisableRxMode
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Put the module into Standby I state with RX mode. Inline function.
+ *
+ */
+inline void NRF24L01_DisableRxMode()
+{
+	_NRF24L01_CELow();
+}
+
 
 
 /* PS:
@@ -461,7 +622,7 @@ NRF24L01_EnableRxMode()
  * 
  * Return		: 	None
  * 
- * Description	: 	Put the module into TX mode
+ * Description	: 	Put the module into TX mode (Standby II state)
  * 
  */
 
@@ -470,8 +631,11 @@ NRF24L01_EnableTxMode()
 {
 	unsigned char ucCurrentVal = NRF24L01_GetStatus();
 
+	// PS: Power up the device
+	NRF24L01_PowerUp();
+
 	// PS: Clear TX_DS and MAX_RT interrupts
-	ucCurrentVal &= (~(RF24_TX_DS | RF24_MAX_RT));
+	ucCurrentVal |= (RF24_MAX_RT | RF24_TX_DS);
 	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
 
 	// PS: Set to TX mode
@@ -479,30 +643,112 @@ NRF24L01_EnableTxMode()
 	ucCurrentVal &= (~RF24_PRIM_RX);
 	
 	NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
-	
+
 	_NRF24L01_CEHigh();
+
+	PrintString("TX mode enabled\n\r");
 }
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_DisableTxMode
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Put the module into Standby I state with TX mode.
+ *
+ */
+void NRF24L01_DisableTxMode()
+{
+	_NRF24L01_CELow();
+
+	PrintString("TX mode disabled\n\r");
+}
+
 
 /* PS:
  * 
  * Function		: 	NRF24L01_IsDataReadyRx
  * 
- * Arguments	: 	None
+ * Arguments	: 	pcPipeNo [out] : Pipe number which contains the RX payload
  * 
- * Return		: 	0	:	Data is not in RX FIFO
- * 					1	:	Data is in RX FIFO
+ * Return		: 	PDLIB_NRF24_INVALID_ARGUMENT	:	Invalid input argument
+ * 					PDLIB_NRF24_ERROR				:	Data is not in RX FIFO
+ * 					PDLIB_NRF24_SUCCESS				:	Data is in RX FIFO
  * 
- * Description	: 	Get the state of RX FIFO
+ * Description	: 	Get the state of RX data.
+ * 					If the return is 'PDLIB_NRF24_SUCCESS' then the pcPipeNo will contain the pipe which has data.
  * 
  */
  
 int
-NRF24L01_IsDataReadyRx()
+NRF24L01_IsDataReadyRx(char *pcPipeNo)
 {
-	unsigned char ucRxFifo;
-	ucRxFifo = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
-	
-	return ((ucRxFifo & RF24_RX_EMPTY) ? 0 : 1);
+	int ret = PDLIB_NRF24_ERROR;
+	char cDataReady;
+
+	if(NULL == pcPipeNo)
+	{
+		ret = PDLIB_NRF24_INVALID_ARGUMENT;
+	}else
+	{
+		NRF24L01_GetStatus();
+
+		cDataReady = ((g_ucStatus & RF24_RX_DR) ? 1 : 0);
+		*pcPipeNo = ((g_ucStatus & ( BIT3 | BIT2 | BIT1)) >> 1);
+
+		// *pcPipeNo will be 7 if the RX fifo is empty
+		if(cDataReady && (*pcPipeNo < 6))
+		{
+			ret = PDLIB_NRF24_SUCCESS;
+		}else
+		{
+			// Reset the value in the pipe number
+			*pcPipeNo = 0xFF;
+			ret = PDLIB_NRF24_ERROR;
+		}
+	}
+
+	return ret;
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_WaitForDataRx
+ *
+ * Arguments	: 	pcPipeNo [out] : Pipe number which contains the RX payload
+ *
+ * Return		: 	PDLIB_NRF24_ERROR	:	Invalid input argument
+ * 					PDLIB_NRF24_SUCCESS	:	Data is in RX FIFO
+ *
+ * Description	: 	Wait until any RX pipe has data
+ *
+ */
+
+int NRF24L01_WaitForDataRx(char *pcPipeNo)
+{
+	int iRet = PDLIB_NRF24_ERROR;
+
+	NRF24L01_EnableRxMode();
+	PrintString("Waiting for data...\n\r");
+/*
+	PrintRegValue("CONFIG: ",NRF24L01_RegisterRead_8(RF24_CONFIG));
+	PrintRegValue("EN_RXADDR: ",NRF24L01_RegisterRead_8(RF24_EN_RXADDR));
+	PrintRegValue("EN_AA: ",NRF24L01_RegisterRead_8(RF24_EN_AA));
+	PrintRegValue("RX_PW_P0: ",NRF24L01_RegisterRead_8(RF24_RX_PW_P0));*/
+
+	while(iRet == PDLIB_NRF24_ERROR)
+	{
+		iRet = NRF24L01_IsDataReadyRx(pcPipeNo);
+	}
+
+
+	NRF24L01_DisableRxMode();
+
+	return iRet;
 }
 
 
@@ -526,7 +772,7 @@ NRF24L01_IsTxFifoFull()
 	unsigned char ucTxFifo;
 	ucTxFifo = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
 
-	return ((ucTxFifo & RF24_TX_FULL) ? 0 : 1);
+	return ((ucTxFifo & RF24_FIFO_FULL) ? 1 : 0);
 }
 
 
@@ -563,7 +809,7 @@ NRF24L01_GetRxDataAmount(unsigned char ucDataPipe)
  * 
  * Function		: 	NRF24L01_SetTXAddress
  * 
- * Arguments	: 	pucAddress	:	Buffer which contains the five bytes to put to address.
+ * Arguments	: 	address	:	Buffer which contains the five bytes to put to address.
  * 
  * Return		: 	None
  * 
@@ -574,58 +820,87 @@ NRF24L01_GetRxDataAmount(unsigned char ucDataPipe)
  */
  
 void 
-NRF24L01_SetTXAddress(unsigned char* pucAddress)
+NRF24L01_SetTXAddress(unsigned char* address)
 {
-	NRF24L01_RegisterWrite_Multi(RF24_TX_ADDR, pucAddress, 5);
+	NRF24L01_RegisterWrite_Multi(RF24_TX_ADDR, (unsigned char*)address, 5);
 }
-
-
 
 /* PS:
  *
  * Function		: 	NRF24L01_WaitForTxComplete
  *
- * Arguments	: 	ucWaitMode	:	0 : Do not wait, return the current state
- * 									1 : Wait until TX done or MAX_RT asserted
+ * Arguments	: 	None
  *
- * Return		: 	0	:	TX not complete and no error reported
- * 					1	:	TX complete with error
- * 					2	:	TX completed successfully
+ * Return		: 	PDLIB_NRF24_SUCCESS			:	TX completed successfully
+ *					PDLIB_NRF24_TX_ARC_REACHED	:	Maximum retransmissions elapsed
  *
  * Description	: 	The function can wait until the
  * 						-TX payload is successfully delivered (If ACK is available)
  * 						or
  * 						-TX payload has successfully transmitted.
  *
- * 					The function will be blocking if ucWaitMode is '1'.
- *
- * 					The function will return -1 if the maximum no of retransmissions elapsed.
- *
+ *					Ths function will return 0 or a negetive error code.
  */
 
 int
-NRF24L01_WaitForTxComplete(unsigned char ucWaitMode)
+NRF24L01_WaitForTxComplete()
 {
-	int ret = 0;
+	int ret = PDLIB_NRF24_SUCCESS;
 
 	NRF24L01_GetStatus();
 
-	if(!ucWaitMode)
-	{
-		ret = ((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) << 4);
-	}else
-	{
-		while(!(g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)))
-		{
-			NRF24L01_GetStatus();
-		}
+	//PrintRegValue("Current status :",g_ucStatus);
 
-		ret = ((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) << 4);
+	while((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0)
+	{
+		NRF24L01_GetStatus();
+		//PrintRegValue("Current status :",g_ucStatus);
+	}
+
+	if(g_ucStatus & RF24_MAX_RT)
+	{
+		PrintRegValue("Maximum retransmissions reached!!! : status >> ",g_ucStatus);
+		ret = PDLIB_NRF24_TX_ARC_REACHED;
 	}
 
 	return ret;
 }
 
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_AttemptTx
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	PDLIB_NRF24_SUCCESS			:	TX completed successfully
+ *					PDLIB_NRF24_TX_ARC_REACHED	:	Maximum retransmissions elapsed
+ *
+ * Description	: 	This function will attempt to TX whatever data available in the
+ * 					TX payload. It waits until the TX is done or maximum retransmissions
+ * 					occur.
+ *
+ * 					Module will be in Power Down mode when it returns.
+ */
+
+int NRF24L01_AttemptTx()
+{
+	int ret = PDLIB_NRF24_SUCCESS;
+
+	PrintString("Attempting TX...\n\r");
+
+	NRF24L01_PowerUp();
+
+	NRF24L01_EnableTxMode();
+
+	ret = NRF24L01_WaitForTxComplete();
+
+	NRF24L01_DisableTxMode();
+
+	NRF24L01_PowerDown();
+
+	return ret;
+}
 
 /* PS:
  * 
@@ -669,41 +944,203 @@ NRF24L01_SetRxAddress(	unsigned char ucDataPipe,
 
 /* PS:
  * 
+ * Function		: 	NRF24L01_SetRXPacketSize
+ *
+ * Arguments	: 	ucDataPipe		:	Data pipe number
+ * 					ucPacketSize	:	Packet size. (Maximum is 32)
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Set the packet size for a RX pipe.
+ *
+ */
+
+void
+NRF24L01_SetRXPacketSize(	unsigned char ucDataPipe,
+							unsigned char ucPacketSize)
+{
+	if(ucPacketSize < 32)
+	{
+		NRF24L01_RegisterWrite_8((RF24_RX_PW_P0 + ucDataPipe), ucPacketSize);
+	}
+
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_CarrierDetect
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	'1' - There is a carrier signal
+ * 					'0' - There is no carrier signal
+ *
+ * Description	: 	Check whether there is any RF carrier in the current frequency channel
+ *
+ */
+
+unsigned char NRF24L01_CarrierDetect(){
+	unsigned char ucTemp = NRF24L01_RegisterRead_8(RF24_CD);
+	return (ucTemp & 0x01);
+}
+
+
+/* PS:
+ *
  * Function		: 	NRF24L01_SetTxPayload
  * 
  * Arguments	: 	pucData		:	Buffer which contains the data to be written to TX fifo
  * 					uiLength	:	Length of the data buffer
  * 
- * Return		: 	-1 	: Tx FIFO full
- * 					0	: Success
+ * Return		: 	PDLIB_NRF24_TX_FIFO_FULL 	: Tx FIFO full
+ * 					PDLIB_NRF24_SUCCESS			: Success
  * 
  * Description	: 	Set the TX payload. 
  * 
  */
  
 int
-NRF24L01_SetTxPayload(	unsigned char* pucData,
+NRF24L01_SetTxPayload(	char* pcData,
 						unsigned int uiLength)
 {
-	int ret = 0;
+	int ret = PDLIB_NRF24_SUCCESS;
 
-	// PS: Check whether TX fifo is full
-	if(NRF24L01_IsTxFifoFull())
+	if(pcData && uiLength > 0)
 	{
-		ret = -1;
+		// PS: Check whether TX fifo is full
+		if(NRF24L01_IsTxFifoFull())
+		{
+			ret = PDLIB_NRF24_TX_FIFO_FULL;
+			PrintString("TX FIFO is full\n\r");
+		}else
+		{
+			NRF24L01_SendCommand(RF24_W_TX_PAYLOAD, pcData, uiLength);
+		}
 	}else
 	{
+		ret = PDLIB_NRF24_ERROR;
+	}
 
-		// PS: Check the Auto Ack feature
 
-		// PS: Check TX reuse feature
+	return ret;
+}
 
-		_NRF24L01_SendCommand(RF24_W_TX_PAYLOAD, pucData, uiLength);
+
+// PS: Implement TX reuse feature
+		// TODO
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_GetData
+ *
+ * Arguments	:	pipe				:	Pipe number
+ * 					pcData [out]		:	Allocated buffer to store the RX data
+ * 					length	[in/out]	:	Length in bytes of pcData (only used in dynamic payload mode) // TODO
+ *
+ * Return		:
+ * 					Positive	:	Number of bytes read
+ *
+ * Description	:
+ * 					This function will read the length amount of data from the RX FIFO
+ * 					If the available data amount is less than the specified value this
+ * 					will return an error.
+ *
+ * 					Payload is automatically deleted from the FIFO once it is read.
+ *
+ * 					This will clear the data ready status bit in the module.
+ *
+ */
+
+int
+NRF24L01_GetData(	char pipe,
+					char* pcData,
+					char *length)
+{
+	int ret = PDLIB_NRF24_SUCCESS; // Amount of data read
+	char cFifoStatus;
+	char cTemp;
+
+	// Check whether dynamic payload is available TODO
+
+	if(NULL == pcData)
+	{
+		ret = PDLIB_NRF24_INVALID_ARGUMENT;
+	}else{
+
+		// PS: Validate pipe, Check FIFO status, Get packet size, Read data
+		NRF24L01_GetStatus();
+		if(PDLIB_NRF24_SUCCESS == NRF24L01_IsDataReadyRx(&cTemp)){
+
+			if(pipe == cTemp){
+				// Get FIFO status
+				cFifoStatus = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
+
+				if(0 == (cFifoStatus & RF24_RX_EMPTY)){
+
+					// PS: Check whether data is available
+					cTemp = NRF24L01_GetRxDataAmount(pipe);
+
+					if((*length) >= cTemp){
+						(*length) = cTemp;
+					}else{
+						// PS: If the actual buffer size is smaller than the available data, we can miss data.
+						ret = PDLIB_NRF24_BUFFER_TOO_SMALL;
+					}
+
+					if(PDLIB_NRF24_SUCCESS == ret){
+
+						// PS: Read RX payload
+						NRF24L01_ReadRxPayload(pcData, cTemp);
+
+						// TODO: Check whether we need to check the actual FIFO state before clearing the interrupt.
+						// Clear RX_DR
+						NRF24L01_GetStatus();
+						g_ucStatus |= RF24_RX_DR;
+						NRF24L01_RegisterWrite_8(RF24_STATUS, g_ucStatus);
+						NRF24L01_GetStatus();
+
+						ret = cTemp;
+					}
+
+				}else{
+					ret = PDLIB_NRF24_ERROR;
+				}
+			}else{
+				ret = PDLIB_NRF24_INVALID_ARGUMENT;
+			}
+		}else{
+			ret = PDLIB_NRF24_ERROR;
+		}
 	}
 
 	return ret;
 }
- 
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_ReadRxPayload
+ *
+ * Arguments	:	pcData [out]	:	Allocated buffer to store the RX data
+ * 					cLength	[in]	:	Required data amount. This should be a valid data amount. (TODO: Verify whether this is neccessary to be valid)
+ *
+ * Return		:	None
+ *
+ * Description	:
+ * 					This function will read the cLength amount of data from the RX FIFO.
+ *
+ * 					This function will not perform any validation of data sizes, buffer size, etc.
+ *
+ * 					Payload is automatically deleted from the FIFO once it is read.
+ *
+ */
+
+void
+NRF24L01_ReadRxPayload(	char* pcData,
+						char cLength)
+{
+	NRF24L01_SendRcvCommand(RF24_R_RX_PAYLOAD, pcData, cLength);
+}
  
 /* PS:
  * 
@@ -718,187 +1155,91 @@ NRF24L01_SetTxPayload(	unsigned char* pucData,
  */
 
 
-/* PS: Not used
- * 
- * Function		: 	NRF24L01_ExecuteCommand
- * 
- * Arguments	: 	ucType		: 	0x01 - For RX
- * 									0x02 - For TX
- * 					ucCommand	:	Command to be executed.
- * 					pucData		:	Tx: Payload of the command.
- * 									Rx: Buffer to receive data.
- * 					uiLength	:	Length of the payload/buffer.
- * 									(If there is no data buffer this value
- * 									must be set to zero)
- * 
- * 					pucStatus	: 	If not NULL status register value will
- * 									be saved here.
- * 
- * Return		: 	Number of bytes transferred or received if success.
- * 					Negetive error code if failed.
- * 
- * Description	: 	ExecuteCommand function can be used to send commands
- * 					to the RF module 
- * 
- * 					For TX:
- * 
- * 					The payload	of the command can also be submitted to 
- * 					the function for easier operation. The ucType parameter 
- * 					should be set to 0x02. The function will return after
- * 					all the data is submitted to the module.
- * 
- * 					For RX:
- * 
- * 					A buffer should be preallocated and provided to the 
- * 					function. The length of the buffer is also expected.
- * 					The ucType parameter should be set to 0x01. Function 
- * 					will return as soon as it received the number of bytes 
- * 					specified by the uiLength or when the module has no
- * 					more data in the Rx FIFO.
- * 
+// ----------------  Normal user level functions ------------------ //
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SendData
+ *
+ * Arguments	: 	pcData		:	Data packet to send
+ * 					ulLength	:	Length of the packet
+ *
+ * Return		:	PDLIB_NRF24_SUCCESS			: Success
+ * 					PDLIB_NRF24_TX_FIFO_FULL 	: Tx FIFO full
+ *					PDLIB_NRF24_TX_ARC_REACHED	: Maximum retransmissions elapsed
+ *
+ * Description	: 	The function will send the specified data using
+ * 					current configuration. (current air data rate,
+ * 					current power, current TX address, ... )
+ *
+ * 					The function will return after the data is successfully transmitted or
+ * 					maximum retransmissions were done. The module will be in Power Down state
+ * 					when this function returns.
+ *
  */
 
-int
-NRF24L01_ExecuteCommand(unsigned char ucType, unsigned char ucCommand, unsigned char *pucData, unsigned int uiLength, unsigned char *pucStatus)
+int NRF24L01_SendData(char *pcData, unsigned int uiLength)
 {
-	int iReturn = -1;
-	unsigned char *pucDataBuffer = NULL;
-	
-	/* PS: Validating arguments */
-	if(uiLength > 0)
-	{
-		if(NULL == pucData)
-		{
-			return iReturn;
-		}
-	}else
-	{
-		if((TYPE_TX == ucType) && (RF24_NOP != ucCommand))
-		{
-			/* PS: Buffer length should be at least one */
-			return iReturn;
-		}
+	int ret;
+	unsigned char address[5];
+	unsigned char cTemp;
+
+	// PS: Check the Auto Ack feature and make sure the data pipe 0 has the correct PTX address
+	cTemp = NRF24L01_RegisterRead_8(RF24_EN_AA);
+
+	if(cTemp & RF24_ENAA_P0){
+		NRF24L01_RegisterRead_Multi(RF24_TX_ADDR, address, 5);
+		NRF24L01_SetRxAddress(PDLIB_NRF24_PIPE0, address);
 	}
-	
-	if(TYPE_RX == ucType)
-	{
-		/* PS: Rx operation */
-	}else if(TYPE_TX == ucType)
-	{
-		/* PS: Tx operation */
-		
-		/* TODO:
-		 * Sometimes malloc and memcpy functions take longer time.
-		 * Need to check whether we can improve performance by 
-		 * executing the pdlibSPI_SendData function twice. That is 
-		 * once for command and next for payload. Then we can 
-		 * avoid using memcpy and malloc here.
-		 */
 
-#ifdef PDLIB_SPI
-		pucDataBuffer = (unsigned char*) malloc(sizeof(char) * (uiLength+1));
-		if(pucDataBuffer)
-		{
-			pucDataBuffer[0] = ucCommand;
-			memcpy(&pucDataBuffer[1],pucData,uiLength);
-			
-			iReturn = pdlibSPI_SendData(pucDataBuffer, (uiLength+1));
-			free(pucDataBuffer);
-			/* PS: Update the current status register value */
-			pdlibSPI_ReceiveDataBlocking(&g_ucStatus);
-			(*pucStatus) = g_ucStatus;
-		}else
-		{
-			iReturn = -1;
-		}
-		
-#endif
-	}else
+	ret = NRF24L01_SetTxPayload(pcData, uiLength);
+
+	if(ret == PDLIB_NRF24_SUCCESS)
 	{
+
+		ret = NRF24L01_AttemptTx();
 	}
-	
-	
-	return iReturn;
-}
 
-
-// ----------------  Hardware Pin Control ------------------ //
-
-
-/* PS:
- * 
- * Function		: 	_NRF24L01_CELow
- * 
- * Arguments	: 	None
- * 
- * Return		: 	None
- * 
- * Description	: 	This function drives the CE pin low
- * 
- */
- 
-static void
-_NRF24L01_CELow()
-{
-	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
-}
- 
-  
-/* PS:
- * 
- * Function		: 	_NRF24L01_CEHigh
- * 
- * Arguments	: 	None
- * 
- * Return		: 	None
- * 
- * Description	: 	This function drives the CE pin high
- * 
- */
-
-static void
-_NRF24L01_CEHigh()
-{
-	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
+	return ret;
 }
 
 
 /* PS:
  *
- * Function		: 	_NRF24L01_CSNLow
+ * Function		: 	NRF24L01_SendDataTo
  *
- * Arguments	: 	None
+ * Arguments	: 	pcData		:	Data packet to send
+ * 					ulLength	:	Length of the packet
+ * 					pcTxAddr	:	TX address
  *
- * Return		: 	None
+ * Return		:	PDLIB_NRF24_SUCCESS			: Success
+ * 					PDLIB_NRF24_TX_FIFO_FULL 	: Tx FIFO full
+ *					PDLIB_NRF24_TX_ARC_REACHED	: Maximum retransmissions elapsed
  *
- * Description	: 	This function drives the CSN pin low
+ * Description	: 	The function will send the specified data using
+ * 					current configuration but to the specified address. (current air data rate,
+ * 					current power, ... )
  *
- */
-
-static void
-_NRF24L01_CSNLow()
-{
-	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0x00);
-}
-
-
-/* PS:
+ * 					The function will return after the data is successfully transmitted or
+ * 					maximum retransmissions were done.
  *
- * Function		: 	_NRF24L01_CSNHigh
- *
- * Arguments	: 	None
- *
- * Return		: 	None
- *
- * Description	: 	This function drives the CSN pin high
+ * 					This function will change the TX address in the module.
  *
  */
 
-static void
-_NRF24L01_CSNHigh()
+int NRF24L01_SendDataTo(unsigned char *address, char *pcData, unsigned int uiLength)
 {
-	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0xFF);
+	int iRet;
+
+	NRF24L01_SetTXAddress(address);
+
+	iRet = NRF24L01_SendData(pcData, uiLength);
+
+	return iRet;
 }
+
+
+
 
 
 // ----------------------- Register Read/Write functions ---------------------- //
@@ -919,7 +1260,7 @@ _NRF24L01_CSNHigh()
  * 
  */
  
-static void
+void
 NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
 {
 	unsigned char ucData[2];
@@ -955,7 +1296,7 @@ NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
  * 
  */
  
-static void
+void
 NRF24L01_RegisterWrite_Multi(	unsigned char ucRegister,
 								unsigned char *pucData,
 								unsigned int uiLength)
@@ -977,52 +1318,6 @@ NRF24L01_RegisterWrite_Multi(	unsigned char ucRegister,
 
 			free(pucBuffer);
 		}
-	}
-}
-
-
-/* PS:
- * 
- * Function		: 	_NRF24L01_SendCommand
- * 
- * Arguments	: 	ucCommand	:	Command to send.
- * 					pucData		:	Data associated with the command
- * 					uiLength	:	Length of the data field
- * 
- * Return		: 	None
- * 
- * Description	: 	This function will send any command with the data buffer
- * 					to the RF module. This will also update the status register.
- * 					If there is no payload for the command set the pucData NULL and
- * 					make the uiLength as 0
- * 
- */
- 
-static void
-_NRF24L01_SendCommand(	unsigned char ucCommand,
-						unsigned char *pucData,
-						unsigned int uiLength)
-{
-	unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength + 1));
-	
-	if(NULL != pucBuffer)
-	{
-		pucBuffer[0] = ucCommand;
-		
-		if(NULL != pucData)
-		{
-			memcpy(&pucBuffer[1], pucData, uiLength);
-		}
-		
-		_NRF24L01_CSNLow();
-
-		pdlibSPI_SendData(pucBuffer, uiLength+1);
-		
-		//g_ucStatus = pdlibSPI_ReceiveDataBlocking();
-		
-		_NRF24L01_CSNHigh();
-
-		free(pucBuffer);
 	}
 }
 
@@ -1094,3 +1389,164 @@ NRF24L01_RegisterRead_Multi(	unsigned char ucRegister,
 
 	return g_ucStatus;
 }
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SendCommand
+ *
+ * Arguments	: 	ucCommand	:	Command to send.
+ * 					pucData		:	Data associated with the command
+ * 					uiLength	:	Length of the data field
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function will send any command with the data buffer
+ * 					to the RF module. This will also update the status register.
+ * 					If there is no payload for the command set the pucData NULL and
+ * 					make the uiLength as 0
+ *
+ */
+
+void
+NRF24L01_SendCommand(	unsigned char ucCommand,
+						char *pcData,
+						unsigned int uiLength)
+{
+	unsigned char *pucBuffer = (unsigned char*) malloc(sizeof(unsigned char) * (uiLength + 1));
+
+	if(NULL != pucBuffer)
+	{
+		pucBuffer[0] = ucCommand;
+
+		if(NULL != pcData)
+		{
+			memcpy(&pucBuffer[1], pcData, uiLength);
+		}
+
+		_NRF24L01_CSNLow();
+
+		pdlibSPI_SendData(pucBuffer, uiLength+1);
+
+		_NRF24L01_CSNHigh();
+
+		free(pucBuffer);
+	}
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SendRcvCommand
+ *
+ * Arguments	: 	ucCommand	:	Command to send.
+ * 					pucData		:	Buffer to get data
+ * 					uiLength	:	Length of the buffer
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function will send any command with the data buffer
+ * 					to the RF module. After that it will read the specifed
+ * 					amount of data and store it as the reply in the provided
+ * 					buffer.
+ *
+ */
+
+void NRF24L01_SendRcvCommand(unsigned char ucCommand, char *pcData, unsigned int uiLength)
+{
+	if(pcData){
+		int i = 0;
+
+		_NRF24L01_CSNLow();
+
+		g_ucStatus = pdlibSPI_TransferByte(ucCommand);
+
+		for(i = 0; i < uiLength; i++)
+		{
+			pcData[i] = pdlibSPI_TransferByte(RF24_NOP);
+		}
+
+		_NRF24L01_CSNHigh();
+	}
+}
+
+
+// ----------------  Hardware Pin Control ------------------ //
+
+
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CELow
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CE pin low
+ *
+ */
+
+static void
+_NRF24L01_CELow()
+{
+	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
+}
+
+
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CEHigh
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CE pin high
+ *
+ */
+
+static void
+_NRF24L01_CEHigh()
+{
+	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
+}
+
+
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CSNLow
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CSN pin low
+ *
+ */
+
+static void
+_NRF24L01_CSNLow()
+{
+	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0x00);
+}
+
+
+/* PS:
+ *
+ * Function		: 	_NRF24L01_CSNHigh
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	This function drives the CSN pin high
+ *
+ */
+
+static void
+_NRF24L01_CSNHigh()
+{
+	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0xFF);
+}
+
+
