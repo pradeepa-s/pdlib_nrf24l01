@@ -47,6 +47,15 @@
  *
  *
  * =====================================================================
+ * 	Registering Interrupt (Simplest) Steps:
+ * =====================================================================
+ *
+ *	[1]. Define 'NRF24L01_CONF_INTERRUPT_PIN' in the pdlib_nrf24l01.h file
+ *	[2]. Call NRF24L01_InterruptInit() function providing required information
+ *	[3]. Create the ISR function.
+ *	[4]. Register the ISR in the Interrupt Vector
+ *
+ * =====================================================================
  * Change Log
  * =====================================================================
  *
@@ -56,7 +65,7 @@
  * [2]. Contains function support to change all the basic settings.
  * [3]. Supports LM4F120H5QR processor. (Stellaris-launchpad)
  * [4]. Three function levels defined, Simple, Average and Advanced
- * [5]. All the functions are polling based.
+ * [5]. Library is compatible for both interrupt and polling
  *
  * =====================================================================
  * Known Issues
@@ -64,9 +73,8 @@
  *
  * Version: 1.01
  *
- * [1]. Interrupt support is not added.
- * [2]. Dynamic payload support is not added.
- * [3]. Auto ACK with payload support is not added
+ * [1]. Dynamic payload support is not added.
+ * [1]. Auto ACK with payload support is not added
  *
  * =====================================================================
  * LM4F120H5QR (Stellaris)
@@ -697,7 +705,13 @@ NRF24L01_EnableTxMode()
  */
 void NRF24L01_DisableTxMode()
 {
+	unsigned char ucCurrentVal = NRF24L01_GetStatus();
+
 	_NRF24L01_CELow();
+
+	// PS: Clear TX_DS and MAX_RT interrupts
+	ucCurrentVal |= (RF24_MAX_RT | RF24_TX_DS);
+	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
 
 	PrintString("TX mode disabled\n\r");
 }
