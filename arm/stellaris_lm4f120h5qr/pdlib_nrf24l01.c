@@ -90,6 +90,7 @@
 #include "nRF24L01.h"
 #include "pdlib_nrf24l01.h"
 #include "pdlib_spi.h"
+#include "driverlib/interrupt.h"
 
 #include "uart_debug.h"
 
@@ -178,6 +179,40 @@ NRF24L01_Init(	unsigned long ulCEBase,
 	NRF24L01_RegisterInit();
 
 	//g_ucPdlibStatus = 0x01;
+}
+
+#endif
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_InterruptInit
+ *
+ * Arguments	:	None
+ *
+ * Return		: 	None
+ *
+ * Description	:	Registers the IRQ pin as an interrupt
+ *
+ */
+
+#ifdef NRF24L01_CONF_INTERRUPT_PIN
+
+void NRF24L01_InterruptInit(unsigned long ulIRQBase,
+							unsigned long ulIRQPin,
+							unsigned long ulIRQPeriph,
+							unsigned long ulInterrupt){
+
+	/* PS: Configure the CE pin to be GPIO output */
+	ROM_SysCtlPeripheralEnable(ulIRQPeriph);
+
+	ROM_GPIOPinTypeGPIOInput(ulIRQBase, ulIRQPin);
+	ROM_GPIOPinIntClear(ulIRQBase, ulIRQPin);
+	ROM_GPIOIntTypeSet(ulIRQBase, ulIRQPin, GPIO_FALLING_EDGE);
+	ROM_GPIOPinIntEnable(ulIRQBase, ulIRQPin);
+
+	ROM_IntEnable(ulInterrupt);
+	ROM_IntMasterEnable();
 }
 
 #endif
@@ -776,6 +811,27 @@ NRF24L01_IsTxFifoFull()
 }
 
 
+/* PS:
+ *
+ * Function		: 	NRF24L01_IsTxFifoEmpty
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	0	:	TX FIFO is NOT empty
+ * 					1	:	TX FIFO is empty
+ *
+ * Description	: 	Get the state of TX FIFO
+ *
+ */
+
+int NRF24L01_IsTxFifoEmpty()
+{
+	unsigned char ucTxFifo;
+	ucTxFifo = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
+
+	return ((ucTxFifo & RF24_TX_EMPTY) ? 1 : 0);
+}
+
 
 /* PS:
  * 
@@ -829,21 +885,25 @@ NRF24L01_SetTXAddress(unsigned char* address)
  *
  * Function		: 	NRF24L01_WaitForTxComplete
  *
- * Arguments	: 	None
+ * Arguments	: 	busy_wait :	If this is 1 then the function will wait until DS or RT
+ * 								bit in status register become '1'.
+ *
+ * 								If this is '0' the state of DS and RT interrupts will return.
  *
  * Return		: 	PDLIB_NRF24_SUCCESS			:	TX completed successfully
  *					PDLIB_NRF24_TX_ARC_REACHED	:	Maximum retransmissions elapsed
+ *					PDLIB_NRF24_ERROR			:	None of the interrupts asserted (only when busy_wait = 0)
  *
  * Description	: 	The function can wait until the
  * 						-TX payload is successfully delivered (If ACK is available)
  * 						or
  * 						-TX payload has successfully transmitted.
  *
- *					Ths function will return 0 or a negetive error code.
+ *					This function will return 0 or a negative error code.
  */
 
 int
-NRF24L01_WaitForTxComplete()
+NRF24L01_WaitForTxComplete(char busy_wait)
 {
 	int ret = PDLIB_NRF24_SUCCESS;
 
@@ -851,11 +911,18 @@ NRF24L01_WaitForTxComplete()
 
 	//PrintRegValue("Current status :",g_ucStatus);
 
-	while((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0)
-	{
-		NRF24L01_GetStatus();
-		//PrintRegValue("Current status :",g_ucStatus);
+	if(busy_wait){
+		while((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0)
+		{
+			NRF24L01_GetStatus();
+			//PrintRegValue("Current status :",g_ucStatus);
+		}
+	}else{
+		if((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0){
+			ret = PDLIB_NRF24_ERROR;
+		}
 	}
+
 
 	if(g_ucStatus & RF24_MAX_RT)
 	{
@@ -889,11 +956,9 @@ int NRF24L01_AttemptTx()
 
 	PrintString("Attempting TX...\n\r");
 
-	NRF24L01_PowerUp();
-
 	NRF24L01_EnableTxMode();
 
-	ret = NRF24L01_WaitForTxComplete();
+	ret = NRF24L01_WaitForTxComplete(1);
 
 	NRF24L01_DisableTxMode();
 
@@ -1043,7 +1108,7 @@ NRF24L01_SetTxPayload(	char* pcData,
  *
  * Description	:
  * 					This function will read the length amount of data from the RX FIFO
- * 					If the available data amount is less than the specified value this
+ * 					If the available data amount is more than the specified value this
  * 					will return an error.
  *
  * 					Payload is automatically deleted from the FIFO once it is read.
@@ -1069,13 +1134,14 @@ NRF24L01_GetData(	char pipe,
 	}else{
 
 		// PS: Validate pipe, Check FIFO status, Get packet size, Read data
-		NRF24L01_GetStatus();
+		//NRF24L01_GetStatus();
 		if(PDLIB_NRF24_SUCCESS == NRF24L01_IsDataReadyRx(&cTemp)){
 
 			if(pipe == cTemp){
 				// Get FIFO status
 				cFifoStatus = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
 
+				// Check whether FIFO is empty
 				if(0 == (cFifoStatus & RF24_RX_EMPTY)){
 
 					// PS: Check whether data is available
@@ -1098,7 +1164,7 @@ NRF24L01_GetData(	char pipe,
 						NRF24L01_GetStatus();
 						g_ucStatus |= RF24_RX_DR;
 						NRF24L01_RegisterWrite_8(RF24_STATUS, g_ucStatus);
-						NRF24L01_GetStatus();
+						//NRF24L01_GetStatus();
 
 						ret = cTemp;
 					}
@@ -1181,6 +1247,44 @@ NRF24L01_ReadRxPayload(	char* pcData,
 int NRF24L01_SendData(char *pcData, unsigned int uiLength)
 {
 	int ret;
+
+	ret = NRF24L01_SubmitData(pcData, uiLength);
+
+	if(ret == PDLIB_NRF24_SUCCESS)
+	{
+
+		ret = NRF24L01_AttemptTx();
+	}
+
+	return ret;
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SubmitData
+ *
+ * Arguments	: 	pcData		:	Data packet to send
+ * 					ulLength	:	Length of the packet
+ *
+ * Return		:	PDLIB_NRF24_SUCCESS			: Success
+ * 					PDLIB_NRF24_TX_FIFO_FULL 	: Tx FIFO full
+ *
+ * Description	: 	The function will send the specified data using
+ * 					current configuration. (current air data rate,
+ * 					current power, current TX address, ... )
+ *
+ * 					This function will write data to payload buffer and make
+ * 					sure correct addresses are there for automatic ack if available.
+ *
+ * 					The module needs to be Powered-Up and put into TX mode in order
+ * 					to perform the transmission.
+ *
+ */
+
+int NRF24L01_SubmitData(char *pcData, unsigned int uiLength)
+{
+	int ret;
 	unsigned char address[5];
 	unsigned char cTemp;
 
@@ -1194,15 +1298,8 @@ int NRF24L01_SendData(char *pcData, unsigned int uiLength)
 
 	ret = NRF24L01_SetTxPayload(pcData, uiLength);
 
-	if(ret == PDLIB_NRF24_SUCCESS)
-	{
-
-		ret = NRF24L01_AttemptTx();
-	}
-
 	return ret;
 }
-
 
 /* PS:
  *

@@ -1,6 +1,12 @@
 #ifndef _PDLIB_NRF24L01
 #define _PDLIB_NRF24L01
 
+
+/* Configurations */
+
+#define NRF24L01_CONF_INTERRUPT_PIN
+
+
 #define PDLIB_NRF24_SUCCESS				0
 #define PDLIB_NRF24_ERROR				-1
 #define PDLIB_NRF24_TX_FIFO_FULL		-2
@@ -18,6 +24,11 @@
 /* PS: Function prototypes */
 
 void NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned long ulCEPeriph, unsigned long ulCSNBase, unsigned long ulCSNPin, unsigned long ulCSNPeriph, unsigned char ucSSIIndex);
+
+#ifdef NRF24L01_CONF_INTERRUPT_PIN
+void NRF24L01_InterruptInit(unsigned long ulIRQBase, unsigned long ulIRQPin, unsigned long ulIRQPeriph, unsigned long ulInterrupt);
+#endif
+
 void NRF24L01_RegisterInit();
 void NRF24L01_PowerDown();
 void NRF24L01_PowerUp();
@@ -38,12 +49,14 @@ unsigned char NRF24L01_GetStatus();
 
 /* TX mode related */
 void NRF24L01_SetTXAddress(unsigned char* address);
+int NRF24L01_SubmitData(char *pcData, unsigned int uiLength);
 int NRF24L01_SetTxPayload(char* pcData, unsigned int uiLength);
 void NRF24L01_EnableTxMode();
 int NRF24L01_AttemptTx();
 void NRF24L01_DisableTxMode();
 int NRF24L01_IsTxFifoFull();
-int NRF24L01_WaitForTxComplete();
+int NRF24L01_IsTxFifoEmpty();
+int NRF24L01_WaitForTxComplete(char busy_wait);
 
 /* RX mode related */
 void NRF24L01_SetRxAddress(unsigned char ucDataPipe, unsigned char *pucAddress);
