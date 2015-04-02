@@ -1,0 +1,372 @@
+******************************************************************************
+                  TI ARM Linker PC v5.0.1                      
+******************************************************************************
+>> Linked Thu Apr 02 22:26:30 2015
+
+OUTPUT FILE NAME:   <pdlib_nrf24l01_interrupt_rx.out>
+ENTRY POINT SYMBOL: "_c_int00"  address: 000017e1
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  FLASH                 00000000   00040000  00001c01  0003e3ff  R  X
+  SRAM                  20000000   00008000  00000296  00007d6a  RW X
+
+
+SEGMENT ALLOCATION MAP
+
+run origin  load origin   length   init length attrs members
+----------  ----------- ---------- ----------- ----- -------
+00000000    00000000    00001c08   00001c08    r-x
+  00000000    00000000    0000026c   0000026c    r-- .intvecs
+  0000026c    0000026c    0000176c   0000176c    r-x .text
+  000019d8    000019d8    000001e9   000001e9    r-- .const
+  00001bc8    00001bc8    00000040   00000040    r-- .cinit
+20000000    20000000    0000027c   00000000    rw-
+  20000000    20000000    00000111   00000000    rw- .bss
+  20000114    20000114    00000100   00000000    rw- .stack
+  20000218    20000218    00000064   00000000    rw- .sysmem
+2000027c    2000027c    00000021   00000021    rw-
+  2000027c    2000027c    00000021   00000021    rw- .data
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.intvecs   0    00000000    0000026c     
+                  00000000    0000026c     startup_ccs.obj (.intvecs)
+
+.text      0    0000026c    0000176c     
+                  0000026c    00000814     pdlib_nrf24l01.obj (.text)
+                  00000a80    000003d8     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.text)
+                  00000e58    000001d8     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlClockGet)
+                  00001030    000001ac     main.obj (.text)
+                  000011dc    00000190     pdlib_spi.obj (.text)
+                  0000136c    00000104     uart_debug.obj (.text)
+                  00001470    000000c8     driverlib-cm4f.lib : gpio.obj (.text:GPIOPadConfigSet)
+                  00001538    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.obj (.text)
+                  000015d4    00000094                                   : auto_init.obj (.text)
+                  00001668    00000078                                   : memset_t2.obj (.text)
+                  000016e0    0000005e                                   : copy_decompress_rle.obj (.text)
+                  0000173e    00000002     --HOLE-- [fill = 0]
+                  00001740    00000058     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlPeripheralEnable)
+                  00001798    00000048                        : gpio.obj (.text:GPIOPinConfigure)
+                  000017e0    00000048     rtsv7M4_T_le_v4SPD16_eabi.lib : boot.obj (.text)
+                  00001828    00000044                                   : cpy_tbl.obj (.text)
+                  0000186c    00000042     driverlib-cm4f.lib : uart.obj (.text:UARTConfigSetExpClk)
+                  000018ae    00000002     --HOLE-- [fill = 0]
+                  000018b0    00000040     rtsv7M4_T_le_v4SPD16_eabi.lib : exit.obj (.text)
+                  000018f0    0000002e     driverlib-cm4f.lib : gpio.obj (.text:GPIODirModeSet)
+                  0000191e    00000002     --HOLE-- [fill = 0]
+                  00001920    0000001c                        : uart.obj (.text:UARTDisable)
+                  0000193c    00000018     rtsv7M4_T_le_v4SPD16_eabi.lib : args_main.obj (.text)
+                  00001954    00000014     driverlib-cm4f.lib : uart.obj (.text:UARTEnable)
+                  00001968    00000014     rtsv7M4_T_le_v4SPD16_eabi.lib : _lock.obj (.text)
+                  0000197c    00000012     driverlib-cm4f.lib : gpio.obj (.text:GPIOPinTypeUART)
+                  0000198e    00000012     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_zero_init.obj (.text:decompress:ZI)
+                  000019a0    0000000e     driverlib-cm4f.lib : gpio.obj (.text:GPIOPinIntStatus)
+                  000019ae    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.obj (.text:decompress:none)
+                  000019bc    0000000c     startup_ccs.obj (.text)
+                  000019c8    0000000a     driverlib-cm4f.lib : uart.obj (.text:UARTCharPut)
+                  000019d2    00000006     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_rle.obj (.text:decompress:rle24)
+
+.const     0    000019d8    000001e9     
+                  000019d8    0000008c     pdlib_spi.obj (.const:g_GPIOConfigure)
+                  00001a64    00000078     driverlib-cm4f.lib : gpio.obj (.const:g_pulGPIOBaseAddrs)
+                  00001adc    0000006c                        : sysctl.obj (.const:g_pulXtals)
+                  00001b48    00000040                        : sysctl.obj (.const)
+                  00001b88    00000028     pdlib_spi.obj (.const:g_SSIModule)
+                  00001bb0    0000000a     pdlib_nrf24l01.obj (.const:.string)
+                  00001bba    00000002     --HOLE-- [fill = 0]
+                  00001bbc    00000005     main.obj (.const:.string)
+
+.cinit     0    00001bc8    00000040     
+                  00001bc8    0000001c     (.cinit..data.load) [load image, compression = rle]
+                  00001be4    0000000c     (__TI_handler_table)
+                  00001bf0    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00001bf8    00000010     (__TI_cinit_table)
+
+.bss       0    20000000    00000111     UNINITIALIZED
+                  20000000    00000100     pdlib_spi.obj (.bss:g_plRxData)
+                  20000100    00000011     pdlib_nrf24l01.obj (.bss)
+
+.stack     0    20000114    00000100     UNINITIALIZED
+                  20000114    00000100     --HOLE--
+
+.sysmem    0    20000218    00000064     UNINITIALIZED
+                  20000218    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.sysmem)
+                  20000220    0000005c     --HOLE--
+
+.data      0    2000027c    00000021     
+                  2000027c    0000000c     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.data)
+                  20000288    00000008                                   : _lock.obj (.data)
+                  20000290    00000008                                   : exit.obj (.data)
+                  20000298    00000004                                   : stkdepth_vars.obj (.data)
+                  2000029c    00000001     pdlib_spi.obj (.data)
+
+
+LINKER GENERATED COPY TABLES
+
+__TI_cinit_table @ 00001bf8 records: 2, size/record: 8, table size: 16
+	.data: load addr=00001bc8, load size=0000001c bytes, run addr=2000027c, run size=00000021 bytes, compression=rle
+	.bss: load addr=00001bf0, load size=00000008 bytes, run addr=20000000, run size=00000111 bytes, compression=zero_init
+
+
+LINKER GENERATED HANDLER TABLE
+
+__TI_handler_table @ 00001be4 records: 3, size/record: 4, table size: 12
+	index: 0, handler: __TI_decompress_rle24
+	index: 1, handler: __TI_decompress_none
+	index: 2, handler: __TI_zero_init
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address    name
+--------   ----
+000018b1   C$$EXIT
+000018f1   GPIODirModeSet
+00001471   GPIOPadConfigSet
+00001799   GPIOPinConfigure
+000019a1   GPIOPinIntStatus
+0000197d   GPIOPinTypeUART
+000013f3   InitUARTDebug
+0000073f   NRF24L01_AttemptTx
+00000a3f   NRF24L01_CarrierDetect
+00000705   NRF24L01_DisableTxMode
+0000035b   NRF24L01_EnableRxMode
+000006d1   NRF24L01_EnableTxMode
+00000795   NRF24L01_FlushRX
+00000781   NRF24L01_FlushTX
+000009c9   NRF24L01_GetData
+00000973   NRF24L01_GetRxDataAmount
+000002bb   NRF24L01_GetStatus
+0000090d   NRF24L01_Init
+000008bb   NRF24L01_InterruptInit
+00000389   NRF24L01_IsDataReadyRx
+000008ad   NRF24L01_IsTxFifoEmpty
+00000485   NRF24L01_IsTxFifoFull
+00000725   NRF24L01_PowerDown
+0000032f   NRF24L01_PowerUp
+000008a3   NRF24L01_ReadRxPayload
+000007b3   NRF24L01_RegisterInit
+00000299   NRF24L01_RegisterRead_8
+000003f5   NRF24L01_RegisterRead_Multi
+00000303   NRF24L01_RegisterWrite_8
+00000423   NRF24L01_RegisterWrite_Multi
+00000493   NRF24L01_SendCommand
+0000075f   NRF24L01_SendData
+0000076d   NRF24L01_SendDataTo
+000006a3   NRF24L01_SendRcvCommand
+00000667   NRF24L01_SetARC
+0000063d   NRF24L01_SetARD
+00000625   NRF24L01_SetAddressWidth
+000005ff   NRF24L01_SetAirDataRate
+000005e1   NRF24L01_SetLNAGain
+00000561   NRF24L01_SetPAGain
+00000559   NRF24L01_SetRFChannel
+0000054b   NRF24L01_SetRXPacketSize
+00000463   NRF24L01_SetRxAddress
+00000541   NRF24L01_SetTXAddress
+000004e1   NRF24L01_SetTxPayload
+00000515   NRF24L01_SubmitData
+000003d1   NRF24L01_WaitForDataRx
+000002c9   NRF24L01_WaitForTxComplete
+00001383   PrintRegValue
+0000136d   PrintString
+000010e1   ReceiveDataISR
+000019bd   ResetISR
+UNDEFED    SHT$$INIT_ARRAY$$Base
+UNDEFED    SHT$$INIT_ARRAY$$Limit
+00000e59   SysCtlClockGet
+00001741   SysCtlPeripheralEnable
+000019c9   UARTCharPut
+0000186d   UARTConfigSetExpClk
+00001921   UARTDisable
+00001955   UARTEnable
+20000214   __STACK_END
+00000100   __STACK_SIZE
+20000214   __STACK_TOP
+00000064   __SYSMEM_SIZE
+00001bf8   __TI_CINIT_Base
+00001c08   __TI_CINIT_Limit
+00001be4   __TI_Handler_Table_Base
+00001bf0   __TI_Handler_Table_Limit
+00000001   __TI_args_main
+000015d5   __TI_auto_init
+000019af   __TI_decompress_none
+000019d3   __TI_decompress_rle24
+00000000   __TI_static_base__
+0000198f   __TI_zero_init
+00001669   __aeabi_memclr
+00001669   __aeabi_memclr4
+00001669   __aeabi_memclr8
+00001539   __aeabi_memcpy
+00001539   __aeabi_memcpy4
+00001539   __aeabi_memcpy8
+0000166b   __aeabi_memset
+0000166b   __aeabi_memset4
+0000166b   __aeabi_memset8
+ffffffff   __binit__
+ffffffff   __c_args__
+20000114   __stack
+0000193d   _args_main
+000017e1   _c_int00
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000288   _lock
+00001977   _nop
+0000196f   _register_lock
+00001969   _register_unlock
+20000218   _sys_memory
+2000028c   _unlock
+000018b5   abort
+ffffffff   binit
+00000e19   calloc
+00001829   copy_in
+000018bd   exit
+00000b6f   free
+00000000   g_pfnVectors
+20000000   g_plRxData
+00001031   main
+20000298   main_func_sp
+00000b0d   malloc
+00000d43   memalign
+00001539   memcpy
+00001671   memset
+00000a81   minit
+000012a1   pdlibSPI_ConfigureSPIInterface
+00001283   pdlibSPI_ReceiveDataBlocking
+00001259   pdlibSPI_ReceiveDataNonBlocking
+00001233   pdlibSPI_SendData
+000011dd   pdlibSPI_TransferByte
+00000c39   realloc
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address    name
+--------   ----
+00000000   __TI_static_base__
+00000000   g_pfnVectors
+00000001   __TI_args_main
+00000064   __SYSMEM_SIZE
+00000100   __STACK_SIZE
+00000299   NRF24L01_RegisterRead_8
+000002bb   NRF24L01_GetStatus
+000002c9   NRF24L01_WaitForTxComplete
+00000303   NRF24L01_RegisterWrite_8
+0000032f   NRF24L01_PowerUp
+0000035b   NRF24L01_EnableRxMode
+00000389   NRF24L01_IsDataReadyRx
+000003d1   NRF24L01_WaitForDataRx
+000003f5   NRF24L01_RegisterRead_Multi
+00000423   NRF24L01_RegisterWrite_Multi
+00000463   NRF24L01_SetRxAddress
+00000485   NRF24L01_IsTxFifoFull
+00000493   NRF24L01_SendCommand
+000004e1   NRF24L01_SetTxPayload
+00000515   NRF24L01_SubmitData
+00000541   NRF24L01_SetTXAddress
+0000054b   NRF24L01_SetRXPacketSize
+00000559   NRF24L01_SetRFChannel
+00000561   NRF24L01_SetPAGain
+000005e1   NRF24L01_SetLNAGain
+000005ff   NRF24L01_SetAirDataRate
+00000625   NRF24L01_SetAddressWidth
+0000063d   NRF24L01_SetARD
+00000667   NRF24L01_SetARC
+000006a3   NRF24L01_SendRcvCommand
+000006d1   NRF24L01_EnableTxMode
+00000705   NRF24L01_DisableTxMode
+00000725   NRF24L01_PowerDown
+0000073f   NRF24L01_AttemptTx
+0000075f   NRF24L01_SendData
+0000076d   NRF24L01_SendDataTo
+00000781   NRF24L01_FlushTX
+00000795   NRF24L01_FlushRX
+000007b3   NRF24L01_RegisterInit
+000008a3   NRF24L01_ReadRxPayload
+000008ad   NRF24L01_IsTxFifoEmpty
+000008bb   NRF24L01_InterruptInit
+0000090d   NRF24L01_Init
+00000973   NRF24L01_GetRxDataAmount
+000009c9   NRF24L01_GetData
+00000a3f   NRF24L01_CarrierDetect
+00000a81   minit
+00000b0d   malloc
+00000b6f   free
+00000c39   realloc
+00000d43   memalign
+00000e19   calloc
+00000e59   SysCtlClockGet
+00001031   main
+000010e1   ReceiveDataISR
+000011dd   pdlibSPI_TransferByte
+00001233   pdlibSPI_SendData
+00001259   pdlibSPI_ReceiveDataNonBlocking
+00001283   pdlibSPI_ReceiveDataBlocking
+000012a1   pdlibSPI_ConfigureSPIInterface
+0000136d   PrintString
+00001383   PrintRegValue
+000013f3   InitUARTDebug
+00001471   GPIOPadConfigSet
+00001539   __aeabi_memcpy
+00001539   __aeabi_memcpy4
+00001539   __aeabi_memcpy8
+00001539   memcpy
+000015d5   __TI_auto_init
+00001669   __aeabi_memclr
+00001669   __aeabi_memclr4
+00001669   __aeabi_memclr8
+0000166b   __aeabi_memset
+0000166b   __aeabi_memset4
+0000166b   __aeabi_memset8
+00001671   memset
+00001741   SysCtlPeripheralEnable
+00001799   GPIOPinConfigure
+000017e1   _c_int00
+00001829   copy_in
+0000186d   UARTConfigSetExpClk
+000018b1   C$$EXIT
+000018b5   abort
+000018bd   exit
+000018f1   GPIODirModeSet
+00001921   UARTDisable
+0000193d   _args_main
+00001955   UARTEnable
+00001969   _register_unlock
+0000196f   _register_lock
+00001977   _nop
+0000197d   GPIOPinTypeUART
+0000198f   __TI_zero_init
+000019a1   GPIOPinIntStatus
+000019af   __TI_decompress_none
+000019bd   ResetISR
+000019c9   UARTCharPut
+000019d3   __TI_decompress_rle24
+00001be4   __TI_Handler_Table_Base
+00001bf0   __TI_Handler_Table_Limit
+00001bf8   __TI_CINIT_Base
+00001c08   __TI_CINIT_Limit
+20000000   g_plRxData
+20000114   __stack
+20000214   __STACK_END
+20000214   __STACK_TOP
+20000218   _sys_memory
+20000288   _lock
+2000028c   _unlock
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000298   main_func_sp
+ffffffff   __binit__
+ffffffff   __c_args__
+ffffffff   binit
+UNDEFED    SHT$$INIT_ARRAY$$Base
+UNDEFED    SHT$$INIT_ARRAY$$Limit
+
+[117 symbols]
