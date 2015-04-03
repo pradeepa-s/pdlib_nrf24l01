@@ -25,9 +25,11 @@
  *
  * [1]. Define the processor type
  * 				Support: PART_LM4F120H5QR
+ * [2]. Define the SPI library.
+ *				Support: PDLIB_SPI
  *
- * [2]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
- * [3]. Call NRF24L01_SendData() or NRF24L01_SendDataTo() to send data. (TX and RX data sizes should match) - Dynamic payload not supported
+ * [3]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
+ * [4]. Call NRF24L01_SendData() or NRF24L01_SendDataTo() to send data. (TX and RX data sizes should match) - Dynamic payload not supported
  *
  *
  * =====================================================================
@@ -38,12 +40,14 @@
  *
  * [1]. Define the processor type
  * 				Support: PART_LM4F120H5QR
+ * [2]. Define the SPI library.
+ *				Support: PDLIB_SPI
  *
- * [2]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
- * [3]. Set the RX packet size for required pipe using NRF24L01_SetRXPacketSize()
- * [4]. Wait for data using NRF24L01_WaitForDataRx()
- * [5]. Get the amount of received data using NRF24L01_GetRxDataAmount()
- * [6]. Get the received data using NRF24L01_GetData()
+ * [3]. Call NRF24L01_Init() function with correct SPI settings. (function may changed based on architecture)
+ * [4]. Set the RX packet size for required pipe using NRF24L01_SetRXPacketSize()
+ * [5]. Wait for data using NRF24L01_WaitForDataRx()
+ * [6]. Get the amount of received data using NRF24L01_GetRxDataAmount()
+ * [7]. Get the received data using NRF24L01_GetData()
  *
  *
  * =====================================================================
@@ -66,6 +70,7 @@
  * [3]. Supports LM4F120H5QR processor. (Stellaris-launchpad)
  * [4]. Three function levels defined, Simple, Average and Advanced
  * [5]. Library is compatible for both interrupt and polling
+ * [6]. PDLIB_SPI library is supported by default
  *
  * =====================================================================
  * Known Issues
@@ -74,7 +79,7 @@
  * Version: 1.01
  *
  * [1]. Dynamic payload support is not added.
- * [1]. Auto ACK with payload support is not added
+ * [2]. Auto ACK with payload support is not added
  *
  * =====================================================================
  * LM4F120H5QR (Stellaris)
@@ -84,7 +89,7 @@
  * 
  * The CSN, SCK, MOSI and MISO pins are analogous to Freescale SPI.
  * 
- * Need to have a separate CE pin.
+ * Need to have a separate CE pin and IRQ pin.
  * 
  * 
  */
@@ -92,19 +97,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "nRF24L01.h"
+#include "pdlib_nrf24l01.h"
+//#include "uart_debug.h"
+
+// SPI library
+#ifdef PDLIB_SPI
+#include "pdlib_spi.h"
+#endif
+
+// Processor architecture
+#ifdef PART_LM4F120H5QR
 #include "inc/hw_types.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/rom.h"
-#include "nRF24L01.h"
-#include "pdlib_nrf24l01.h"
-#include "pdlib_spi.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/gpio.h"
-//#include "uart_debug.h"
+#endif
 
 static void _NRF24L01_CEHigh();
 static void _NRF24L01_CELow();
-	
 
 static void _NRF24L01_CSNHigh();
 static void _NRF24L01_CSNLow();
@@ -185,8 +197,6 @@ NRF24L01_Init(	unsigned long ulCEBase,
 	_NRF24L01_CSNHigh();
 
 	NRF24L01_RegisterInit();
-
-	//g_ucPdlibStatus = 0x01;
 }
 
 #endif
@@ -206,6 +216,8 @@ NRF24L01_Init(	unsigned long ulCEBase,
 
 #ifdef NRF24L01_CONF_INTERRUPT_PIN
 
+#ifdef PART_LM4F120H5QR
+
 void NRF24L01_InterruptInit(unsigned long ulIRQBase,
 							unsigned long ulIRQPin,
 							unsigned long ulIRQPeriph,
@@ -222,6 +234,7 @@ void NRF24L01_InterruptInit(unsigned long ulIRQBase,
 	ROM_IntEnable(ulInterrupt);
 	ROM_IntMasterEnable();
 }
+#endif
 
 #endif
 
@@ -1399,11 +1412,13 @@ NRF24L01_RegisterWrite_8(unsigned char ucRegister, unsigned char ucValue)
 	
 	_NRF24L01_CSNLow();
 	
+#ifdef PDLIB_SPI
 	/* PS: Send address */
 	g_ucStatus = pdlibSPI_TransferByte(ucData[0]);
 
 	/* PS: Send data */
 	pdlibSPI_TransferByte(ucData[1]);
+#endif
 
 	_NRF24L01_CSNHigh();
 }
@@ -1440,9 +1455,10 @@ NRF24L01_RegisterWrite_Multi(	unsigned char ucRegister,
 
 			_NRF24L01_CSNLow();
 
+#ifdef PDLIB_SPI
 			g_ucStatus = pdlibSPI_TransferByte(RF24_W_REGISTER | ucRegister);
 			pdlibSPI_SendData(pucBuffer, uiLength);
-			
+#endif
 			_NRF24L01_CSNHigh();
 
 			free(pucBuffer);
@@ -1472,9 +1488,11 @@ NRF24L01_RegisterRead_8(unsigned char ucRegister)
 
 	_NRF24L01_CSNLow();
 
+#ifdef PDLIB_SPI
 	g_ucStatus = pdlibSPI_TransferByte(RF24_R_REGISTER | ucRegister);
 	
 	ucData = pdlibSPI_TransferByte(RF24_NOP);
+#endif
 
 	_NRF24L01_CSNHigh();
 
@@ -1507,12 +1525,14 @@ NRF24L01_RegisterRead_Multi(	unsigned char ucRegister,
 
 	_NRF24L01_CSNLow();
 
+#ifdef PDLIB_SPI
 	g_ucStatus = pdlibSPI_TransferByte(RF24_R_REGISTER | ucRegister);
 
 	for(i = 0; i<uiLength; i++)
 	{
 		pucBuffer[i] = pdlibSPI_TransferByte(RF24_NOP);
 	}
+#endif
 
 	_NRF24L01_CSNHigh();
 
@@ -1555,7 +1575,9 @@ NRF24L01_SendCommand(	unsigned char ucCommand,
 
 		_NRF24L01_CSNLow();
 
+#ifdef PDLIB_SPI
 		pdlibSPI_SendData(pucBuffer, uiLength+1);
+#endif
 
 		_NRF24L01_CSNHigh();
 
@@ -1588,13 +1610,14 @@ void NRF24L01_SendRcvCommand(unsigned char ucCommand, char *pcData, unsigned int
 
 		_NRF24L01_CSNLow();
 
+#ifdef PDLIB_SPI
 		g_ucStatus = pdlibSPI_TransferByte(ucCommand);
 
 		for(i = 0; i < uiLength; i++)
 		{
 			pcData[i] = pdlibSPI_TransferByte(RF24_NOP);
 		}
-
+#endif
 		_NRF24L01_CSNHigh();
 	}
 }
@@ -1618,7 +1641,9 @@ void NRF24L01_SendRcvCommand(unsigned char ucCommand, char *pcData, unsigned int
 static void
 _NRF24L01_CELow()
 {
+#ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
+#endif
 }
 
 
@@ -1637,7 +1662,9 @@ _NRF24L01_CELow()
 static void
 _NRF24L01_CEHigh()
 {
+#ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
+#endif
 }
 
 
@@ -1656,7 +1683,9 @@ _NRF24L01_CEHigh()
 static void
 _NRF24L01_CSNLow()
 {
+#ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0x00);
+#endif
 }
 
 
@@ -1675,7 +1704,9 @@ _NRF24L01_CSNLow()
 static void
 _NRF24L01_CSNHigh()
 {
+#ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCSNBase, g_ulCSNPin, 0xFF);
+#endif
 }
 
 
