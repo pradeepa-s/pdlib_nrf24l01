@@ -9,7 +9,7 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/rom.h"
-#include "uart_debug.h"
+//#include "uart_debug.h"
 #include "inc/hw_ints.h"
 
 void TransmitDataISR();
@@ -25,7 +25,7 @@ int main(void) {
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE,GPIO_PIN_1| GPIO_PIN_2| GPIO_PIN_3);
 
-	InitUARTDebug();
+	//InitUARTDebug();
 
 	/* PS: Initialize the module, need to provide CE pin, CSN pin and SSI module information */
 	NRF24L01_Init(GPIO_PORTE_BASE,GPIO_PIN_1, SYSCTL_PERIPH_GPIOE, GPIO_PORTE_BASE, GPIO_PIN_2, SYSCTL_PERIPH_GPIOE, 0x03);
@@ -107,9 +107,10 @@ void TransmitDataISR(){
 		}else if(PDLIB_NRF24_SUCCESS == status){
 
 			if(0 == NRF24L01_IsTxFifoEmpty()){
-				// Send the rest of the data
+				// Since TX FIFO is not empty we'll retry sending the rest of the data
 				NRF24L01_EnableTxMode();
 			}else{
+				// No data in the FIFO we'll disable the TX mode
 				NRF24L01_DisableTxMode();
 				NRF24L01_PowerDown();
 			}

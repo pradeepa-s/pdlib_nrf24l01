@@ -12,7 +12,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/rom.h"
 #include "inc/hw_ints.h"
-#include "uart_debug.h"
+//#include "uart_debug.h"
 
 void ReceiveDataISR();
 
@@ -30,7 +30,7 @@ int main(void) {
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE,GPIO_PIN_1| GPIO_PIN_2| GPIO_PIN_3);
 
-	InitUARTDebug();
+	//InitUARTDebug();
 
 	/* PS: Initialize the module, need to provide CE pin, CSN pin and SSI module information */
 	NRF24L01_Init(GPIO_PORTE_BASE,GPIO_PIN_1, SYSCTL_PERIPH_GPIOE, GPIO_PORTE_BASE, GPIO_PIN_2, SYSCTL_PERIPH_GPIOE, 0x03);
@@ -102,15 +102,15 @@ void ReceiveDataISR(){
 		{
 			// Get data amount in the pipe
 			temp = NRF24L01_GetRxDataAmount(pipe_no);
-			PrintRegValue("Data Available in: ",pipe_no);
-			PrintRegValue("Data amount available : ",temp);
+			//PrintRegValue("Data Available in: ",pipe_no);
+			//PrintRegValue("Data amount available : ",temp);
 			memset(data,0x00,32);
 
 			// Get data from the pipe
 			status = NRF24L01_GetData(pipe_no, data, &temp);
-			PrintString("Data Read: ");
-			PrintString((const char*)data);
-			PrintString("\n\r");
+			//PrintString("Data Read: ");
+			//PrintString((const char*)data);
+			//PrintString("\n\r");
 		}
 	}
 
