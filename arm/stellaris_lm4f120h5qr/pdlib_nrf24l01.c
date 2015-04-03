@@ -50,7 +50,7 @@
  * 	Registering Interrupt (Simplest) Steps:
  * =====================================================================
  *
- *	[1]. Define 'NRF24L01_CONF_INTERRUPT_PIN' in the pdlib_nrf24l01.h file
+ *	[1]. Define 'NRF24L01_CONF_INTERRUPT_PIN' in project settings.
  *	[2]. Call NRF24L01_InterruptInit() function providing required information
  *	[3]. Create the ISR function.
  *	[4]. Register the ISR in the Interrupt Vector
@@ -99,8 +99,8 @@
 #include "pdlib_nrf24l01.h"
 #include "pdlib_spi.h"
 #include "driverlib/interrupt.h"
-
-#include "uart_debug.h"
+#include "driverlib/gpio.h"
+//#include "uart_debug.h"
 
 static void _NRF24L01_CEHigh();
 static void _NRF24L01_CELow();
@@ -584,7 +584,9 @@ void
 NRF24L01_FlushTX()
 {
 	NRF24L01_SendCommand(RF24_FLUSH_TX, NULL, 0);
+#ifdef PDLIB_DEBUG
 	PrintString("TX buffer flushed \n\r");
+#endif
 }
 
 
@@ -689,7 +691,9 @@ NRF24L01_EnableTxMode()
 
 	_NRF24L01_CEHigh();
 
+#ifdef PDLIB_DEBUG
 	PrintString("TX mode enabled\n\r");
+#endif
 }
 
 /* PS:
@@ -713,7 +717,9 @@ void NRF24L01_DisableTxMode()
 	ucCurrentVal |= (RF24_MAX_RT | RF24_TX_DS);
 	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
 
+#ifdef PDLIB_DEBUG
 	PrintString("TX mode disabled\n\r");
+#endif
 }
 
 
@@ -782,12 +788,17 @@ int NRF24L01_WaitForDataRx(char *pcPipeNo)
 	int iRet = PDLIB_NRF24_ERROR;
 
 	NRF24L01_EnableRxMode();
+
+#ifdef PDLIB_DEBUG
 	PrintString("Waiting for data...\n\r");
-/*
-	PrintRegValue("CONFIG: ",NRF24L01_RegisterRead_8(RF24_CONFIG));
-	PrintRegValue("EN_RXADDR: ",NRF24L01_RegisterRead_8(RF24_EN_RXADDR));
-	PrintRegValue("EN_AA: ",NRF24L01_RegisterRead_8(RF24_EN_AA));
-	PrintRegValue("RX_PW_P0: ",NRF24L01_RegisterRead_8(RF24_RX_PW_P0));*/
+
+	/*
+		PrintRegValue("CONFIG: ",NRF24L01_RegisterRead_8(RF24_CONFIG));
+		PrintRegValue("EN_RXADDR: ",NRF24L01_RegisterRead_8(RF24_EN_RXADDR));
+		PrintRegValue("EN_AA: ",NRF24L01_RegisterRead_8(RF24_EN_AA));
+		PrintRegValue("RX_PW_P0: ",NRF24L01_RegisterRead_8(RF24_RX_PW_P0));*/
+#endif
+
 
 	while(iRet == PDLIB_NRF24_ERROR)
 	{
@@ -923,13 +934,14 @@ NRF24L01_WaitForTxComplete(char busy_wait)
 
 	NRF24L01_GetStatus();
 
-	//PrintRegValue("Current status :",g_ucStatus);
+#ifdef PDLIB_DEBUG
+	PrintRegValue("Current status :",g_ucStatus);
+#endif
 
 	if(busy_wait){
 		while((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0)
 		{
 			NRF24L01_GetStatus();
-			//PrintRegValue("Current status :",g_ucStatus);
 		}
 	}else{
 		if((g_ucStatus & (RF24_MAX_RT | RF24_TX_DS)) == 0){
@@ -940,7 +952,9 @@ NRF24L01_WaitForTxComplete(char busy_wait)
 
 	if(g_ucStatus & RF24_MAX_RT)
 	{
+#ifdef PDLIB_DEBUG
 		PrintRegValue("Maximum retransmissions reached!!! : status >> ",g_ucStatus);
+#endif
 		ret = PDLIB_NRF24_TX_ARC_REACHED;
 	}
 
@@ -968,7 +982,9 @@ int NRF24L01_AttemptTx()
 {
 	int ret = PDLIB_NRF24_SUCCESS;
 
+#ifdef PDLIB_DEBUG
 	PrintString("Attempting TX...\n\r");
+#endif
 
 	NRF24L01_EnableTxMode();
 
@@ -1091,7 +1107,9 @@ NRF24L01_SetTxPayload(	char* pcData,
 		if(NRF24L01_IsTxFifoFull())
 		{
 			ret = PDLIB_NRF24_TX_FIFO_FULL;
+#ifdef PDLIB_DEBUG
 			PrintString("TX FIFO is full\n\r");
+#endif
 		}else
 		{
 			NRF24L01_SendCommand(RF24_W_TX_PAYLOAD, pcData, uiLength);

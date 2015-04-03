@@ -4,7 +4,7 @@
 
 /* Configurations */
 
-#define NRF24L01_CONF_INTERRUPT_PIN
+//#define NRF24L01_CONF_INTERRUPT_PIN
 
 
 #define PDLIB_NRF24_SUCCESS				0
