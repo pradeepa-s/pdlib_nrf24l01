@@ -3,6 +3,11 @@ pdlib_nrf24l01
 
 The library is to interface NRF24L01 modules with micro-controllers. The library is written in C to make sure the code size is less.
 
+Change Log
+===========
+[2015-04-03]:	Release V1.01
+			Provides support to all the functions except Dynamic Payload and Auto Ack payload.
+
 Porting the library:
 ====================
 
