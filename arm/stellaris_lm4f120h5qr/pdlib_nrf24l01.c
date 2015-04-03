@@ -91,15 +91,24 @@
  * 
  * Need to have a separate CE pin and IRQ pin.
  * 
- * 
+ * Tested connection: 	PE1 <-> CE
+ * (Using SSI3)			PE2 <-> CSN
+ * 						PD0 <-> SCK
+ * 						PD3 <-> MOSI
+ * 						PD2 <-> MISO
+ * 						PE3	<-> IRQ
  */
- 
+
+//#define PDLIB_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "nRF24L01.h"
 #include "pdlib_nrf24l01.h"
-//#include "uart_debug.h"
+
+#ifdef PDLIB_DEBUG
+#include "uart_debug.h"
+#endif
 
 // SPI library
 #ifdef PDLIB_SPI
@@ -114,6 +123,8 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/gpio.h"
 #endif
+
+
 
 static void _NRF24L01_CEHigh();
 static void _NRF24L01_CELow();
