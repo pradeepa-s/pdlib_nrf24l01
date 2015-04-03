@@ -69,7 +69,7 @@ void NRF24L01_FlushRX();
 void NRF24L01_SetRxAddress(unsigned char ucDataPipe, unsigned char *pucAddress);
 void NRF24L01_SetRXPacketSize(unsigned char ucDataPipe, unsigned char ucPacketSize);
 void NRF24L01_EnableRxMode();
-inline void NRF24L01_DisableRxMode();
+void NRF24L01_DisableRxMode();
 int NRF24L01_IsDataReadyRx(char *pcPipeNo);
 void NRF24L01_ReadRxPayload(char* pcData, char cLength);
 unsigned char NRF24L01_CarrierDetect();

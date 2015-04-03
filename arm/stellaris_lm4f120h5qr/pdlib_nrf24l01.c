@@ -676,7 +676,7 @@ NRF24L01_EnableRxMode()
  * Description	: 	Put the module into Standby I state with RX mode. Inline function.
  *
  */
-inline void NRF24L01_DisableRxMode()
+void NRF24L01_DisableRxMode()
 {
 	_NRF24L01_CELow();
 }
