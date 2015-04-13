@@ -1,0 +1,334 @@
+******************************************************************************
+                  TI ARM Linker PC v5.0.1                      
+******************************************************************************
+>> Linked Fri Apr 03 13:20:28 2015
+
+OUTPUT FILE NAME:   <pdlib_nrf24l01_interrupt_rx.out>
+ENTRY POINT SYMBOL: "_c_int00"  address: 00001431
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  FLASH                 00000000   00040000  000016d9  0003e927  R  X
+  SRAM                  20000000   00008000  00000296  00007d6a  RW X
+
+
+SEGMENT ALLOCATION MAP
+
+run origin  load origin   length   init length attrs members
+----------  ----------- ---------- ----------- ----- -------
+00000000    00000000    000016e0   000016e0    r-x
+  00000000    00000000    0000026c   0000026c    r-- .intvecs
+  0000026c    0000026c    000012fc   000012fc    r-x .text
+  00001568    00001568    00000131   00000131    r-- .const
+  000016a0    000016a0    00000040   00000040    r-- .cinit
+20000000    20000000    0000027c   00000000    rw-
+  20000000    20000000    00000111   00000000    rw- .bss
+  20000114    20000114    00000100   00000000    rw- .stack
+  20000218    20000218    00000064   00000000    rw- .sysmem
+2000027c    2000027c    00000021   00000021    rw-
+  2000027c    2000027c    00000021   00000021    rw- .data
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.intvecs   0    00000000    0000026c     
+                  00000000    0000026c     startup_ccs.obj (.intvecs)
+
+.text      0    0000026c    000012fc     
+                  0000026c    0000073c     pdlib_nrf24l01.obj (.text)
+                  000009a8    000003d8     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.text)
+                  00000d80    000001d8     driverlib-cm4f.lib : sysctl.obj (.text:SysCtlClockGet)
+                  00000f58    00000190     pdlib_spi.obj (.text)
+                  000010e8    00000140     main.obj (.text)
+                  00001228    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.obj (.text)
+                  000012c4    00000094                                   : auto_init.obj (.text)
+                  00001358    00000078                                   : memset_t2.obj (.text)
+                  000013d0    0000005e                                   : copy_decompress_rle.obj (.text)
+                  0000142e    00000002     --HOLE-- [fill = 0]
+                  00001430    00000048                                   : boot.obj (.text)
+                  00001478    00000044                                   : cpy_tbl.obj (.text)
+                  000014bc    00000040                                   : exit.obj (.text)
+                  000014fc    00000018                                   : args_main.obj (.text)
+                  00001514    00000014                                   : _lock.obj (.text)
+                  00001528    00000012                                   : copy_zero_init.obj (.text:decompress:ZI)
+                  0000153a    0000000e     driverlib-cm4f.lib : gpio.obj (.text:GPIOPinIntStatus)
+                  00001548    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.obj (.text:decompress:none)
+                  00001556    0000000c     startup_ccs.obj (.text)
+                  00001562    00000006     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_rle.obj (.text:decompress:rle24)
+
+.const     0    00001568    00000131     
+                  00001568    0000008c     pdlib_spi.obj (.const:g_GPIOConfigure)
+                  000015f4    0000006c     driverlib-cm4f.lib : sysctl.obj (.const:g_pulXtals)
+                  00001660    00000028     pdlib_spi.obj (.const:g_SSIModule)
+                  00001688    0000000a     pdlib_nrf24l01.obj (.const:.string)
+                  00001692    00000002     --HOLE-- [fill = 0]
+                  00001694    00000005     main.obj (.const:.string)
+
+.cinit     0    000016a0    00000040     
+                  000016a0    0000001c     (.cinit..data.load) [load image, compression = rle]
+                  000016bc    0000000c     (__TI_handler_table)
+                  000016c8    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  000016d0    00000010     (__TI_cinit_table)
+
+.bss       0    20000000    00000111     UNINITIALIZED
+                  20000000    00000100     pdlib_spi.obj (.bss:g_plRxData)
+                  20000100    00000011     pdlib_nrf24l01.obj (.bss)
+
+.stack     0    20000114    00000100     UNINITIALIZED
+                  20000114    00000100     --HOLE--
+
+.sysmem    0    20000218    00000064     UNINITIALIZED
+                  20000218    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.sysmem)
+                  20000220    0000005c     --HOLE--
+
+.data      0    2000027c    00000021     
+                  2000027c    0000000c     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.obj (.data)
+                  20000288    00000008                                   : _lock.obj (.data)
+                  20000290    00000008                                   : exit.obj (.data)
+                  20000298    00000004                                   : stkdepth_vars.obj (.data)
+                  2000029c    00000001     pdlib_spi.obj (.data)
+
+
+LINKER GENERATED COPY TABLES
+
+__TI_cinit_table @ 000016d0 records: 2, size/record: 8, table size: 16
+	.data: load addr=000016a0, load size=0000001c bytes, run addr=2000027c, run size=00000021 bytes, compression=rle
+	.bss: load addr=000016c8, load size=00000008 bytes, run addr=20000000, run size=00000111 bytes, compression=zero_init
+
+
+LINKER GENERATED HANDLER TABLE
+
+__TI_handler_table @ 000016bc records: 3, size/record: 4, table size: 12
+	index: 0, handler: __TI_decompress_rle24
+	index: 1, handler: __TI_decompress_none
+	index: 2, handler: __TI_zero_init
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address    name
+--------   ----
+000014bd   C$$EXIT
+0000153b   GPIOPinIntStatus
+000006df   NRF24L01_AttemptTx
+0000097f   NRF24L01_CarrierDetect
+000006ab   NRF24L01_DisableTxMode
+00000355   NRF24L01_EnableRxMode
+0000067d   NRF24L01_EnableTxMode
+00000725   NRF24L01_FlushRX
+0000071b   NRF24L01_FlushTX
+00000909   NRF24L01_GetData
+000008eb   NRF24L01_GetRxDataAmount
+000002bb   NRF24L01_GetStatus
+00000885   NRF24L01_Init
+00000837   NRF24L01_InterruptInit
+00000383   NRF24L01_IsDataReadyRx
+00000829   NRF24L01_IsTxFifoEmpty
+00000479   NRF24L01_IsTxFifoFull
+000006c5   NRF24L01_PowerDown
+00000329   NRF24L01_PowerUp
+0000081f   NRF24L01_ReadRxPayload
+0000072f   NRF24L01_RegisterInit
+00000299   NRF24L01_RegisterRead_8
+000003e9   NRF24L01_RegisterRead_Multi
+000002fd   NRF24L01_RegisterWrite_8
+00000417   NRF24L01_RegisterWrite_Multi
+00000487   NRF24L01_SendCommand
+000006f9   NRF24L01_SendData
+00000707   NRF24L01_SendDataTo
+0000064f   NRF24L01_SendRcvCommand
+0000062b   NRF24L01_SetARC
+00000601   NRF24L01_SetARD
+000005df   NRF24L01_SetAddressWidth
+000005b9   NRF24L01_SetAirDataRate
+0000059b   NRF24L01_SetLNAGain
+00000555   NRF24L01_SetPAGain
+00000547   NRF24L01_SetRFChannel
+00000539   NRF24L01_SetRXPacketSize
+00000457   NRF24L01_SetRxAddress
+00000529   NRF24L01_SetTXAddress
+000004c9   NRF24L01_SetTxPayload
+000004f9   NRF24L01_SubmitData
+000003cb   NRF24L01_WaitForDataRx
+000002c9   NRF24L01_WaitForTxComplete
+00001195   ReceiveDataISR
+00001557   ResetISR
+UNDEFED    SHT$$INIT_ARRAY$$Base
+UNDEFED    SHT$$INIT_ARRAY$$Limit
+00000d81   SysCtlClockGet
+20000214   __STACK_END
+00000100   __STACK_SIZE
+20000214   __STACK_TOP
+00000064   __SYSMEM_SIZE
+000016d0   __TI_CINIT_Base
+000016e0   __TI_CINIT_Limit
+000016bc   __TI_Handler_Table_Base
+000016c8   __TI_Handler_Table_Limit
+00000001   __TI_args_main
+000012c5   __TI_auto_init
+00001549   __TI_decompress_none
+00001563   __TI_decompress_rle24
+00000000   __TI_static_base__
+00001529   __TI_zero_init
+00001359   __aeabi_memclr
+00001359   __aeabi_memclr4
+00001359   __aeabi_memclr8
+00001229   __aeabi_memcpy
+00001229   __aeabi_memcpy4
+00001229   __aeabi_memcpy8
+0000135b   __aeabi_memset
+0000135b   __aeabi_memset4
+0000135b   __aeabi_memset8
+ffffffff   __binit__
+ffffffff   __c_args__
+20000114   __stack
+000014fd   _args_main
+00001431   _c_int00
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000288   _lock
+00001523   _nop
+0000151b   _register_lock
+00001515   _register_unlock
+20000218   _sys_memory
+2000028c   _unlock
+000014c1   abort
+ffffffff   binit
+00000d41   calloc
+00001479   copy_in
+000014c9   exit
+00000a97   free
+00000000   g_pfnVectors
+20000000   g_plRxData
+000010e9   main
+20000298   main_func_sp
+00000a35   malloc
+00000c6b   memalign
+00001229   memcpy
+00001361   memset
+000009a9   minit
+0000101d   pdlibSPI_ConfigureSPIInterface
+00000fff   pdlibSPI_ReceiveDataBlocking
+00000fd5   pdlibSPI_ReceiveDataNonBlocking
+00000faf   pdlibSPI_SendData
+00000f59   pdlibSPI_TransferByte
+00000b61   realloc
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address    name
+--------   ----
+00000000   __TI_static_base__
+00000000   g_pfnVectors
+00000001   __TI_args_main
+00000064   __SYSMEM_SIZE
+00000100   __STACK_SIZE
+00000299   NRF24L01_RegisterRead_8
+000002bb   NRF24L01_GetStatus
+000002c9   NRF24L01_WaitForTxComplete
+000002fd   NRF24L01_RegisterWrite_8
+00000329   NRF24L01_PowerUp
+00000355   NRF24L01_EnableRxMode
+00000383   NRF24L01_IsDataReadyRx
+000003cb   NRF24L01_WaitForDataRx
+000003e9   NRF24L01_RegisterRead_Multi
+00000417   NRF24L01_RegisterWrite_Multi
+00000457   NRF24L01_SetRxAddress
+00000479   NRF24L01_IsTxFifoFull
+00000487   NRF24L01_SendCommand
+000004c9   NRF24L01_SetTxPayload
+000004f9   NRF24L01_SubmitData
+00000529   NRF24L01_SetTXAddress
+00000539   NRF24L01_SetRXPacketSize
+00000547   NRF24L01_SetRFChannel
+00000555   NRF24L01_SetPAGain
+0000059b   NRF24L01_SetLNAGain
+000005b9   NRF24L01_SetAirDataRate
+000005df   NRF24L01_SetAddressWidth
+00000601   NRF24L01_SetARD
+0000062b   NRF24L01_SetARC
+0000064f   NRF24L01_SendRcvCommand
+0000067d   NRF24L01_EnableTxMode
+000006ab   NRF24L01_DisableTxMode
+000006c5   NRF24L01_PowerDown
+000006df   NRF24L01_AttemptTx
+000006f9   NRF24L01_SendData
+00000707   NRF24L01_SendDataTo
+0000071b   NRF24L01_FlushTX
+00000725   NRF24L01_FlushRX
+0000072f   NRF24L01_RegisterInit
+0000081f   NRF24L01_ReadRxPayload
+00000829   NRF24L01_IsTxFifoEmpty
+00000837   NRF24L01_InterruptInit
+00000885   NRF24L01_Init
+000008eb   NRF24L01_GetRxDataAmount
+00000909   NRF24L01_GetData
+0000097f   NRF24L01_CarrierDetect
+000009a9   minit
+00000a35   malloc
+00000a97   free
+00000b61   realloc
+00000c6b   memalign
+00000d41   calloc
+00000d81   SysCtlClockGet
+00000f59   pdlibSPI_TransferByte
+00000faf   pdlibSPI_SendData
+00000fd5   pdlibSPI_ReceiveDataNonBlocking
+00000fff   pdlibSPI_ReceiveDataBlocking
+0000101d   pdlibSPI_ConfigureSPIInterface
+000010e9   main
+00001195   ReceiveDataISR
+00001229   __aeabi_memcpy
+00001229   __aeabi_memcpy4
+00001229   __aeabi_memcpy8
+00001229   memcpy
+000012c5   __TI_auto_init
+00001359   __aeabi_memclr
+00001359   __aeabi_memclr4
+00001359   __aeabi_memclr8
+0000135b   __aeabi_memset
+0000135b   __aeabi_memset4
+0000135b   __aeabi_memset8
+00001361   memset
+00001431   _c_int00
+00001479   copy_in
+000014bd   C$$EXIT
+000014c1   abort
+000014c9   exit
+000014fd   _args_main
+00001515   _register_unlock
+0000151b   _register_lock
+00001523   _nop
+00001529   __TI_zero_init
+0000153b   GPIOPinIntStatus
+00001549   __TI_decompress_none
+00001557   ResetISR
+00001563   __TI_decompress_rle24
+000016bc   __TI_Handler_Table_Base
+000016c8   __TI_Handler_Table_Limit
+000016d0   __TI_CINIT_Base
+000016e0   __TI_CINIT_Limit
+20000000   g_plRxData
+20000114   __stack
+20000214   __STACK_END
+20000214   __STACK_TOP
+20000218   _sys_memory
+20000288   _lock
+2000028c   _unlock
+20000290   _cleanup_ptr
+20000294   _dtors_ptr
+20000298   main_func_sp
+ffffffff   __binit__
+ffffffff   __c_args__
+ffffffff   binit
+UNDEFED    SHT$$INIT_ARRAY$$Base
+UNDEFED    SHT$$INIT_ARRAY$$Limit
+
+[105 symbols]
