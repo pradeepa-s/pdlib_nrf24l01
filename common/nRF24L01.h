@@ -91,6 +91,12 @@
 #define RF24_ERX_P2      BIT2
 #define RF24_ERX_P1      BIT1
 #define RF24_ERX_P0      BIT0
+#define RF24_DYNPL_P5	 BIT5
+#define RF24_DYNPL_P4	 BIT4
+#define RF24_DYNPL_P3	 BIT3
+#define RF24_DYNPL_P2	 BIT2
+#define RF24_DYNPL_P1	 BIT1
+#define RF24_DYNPL_P0	 BIT0
 #define RF24_AW          BIT0
 #define RF24_ARD         BIT4
 #define RF24_ARC         BIT0
@@ -129,6 +135,7 @@
 #define RF24_R_RX_PL_WID   0x60
 #define RF24_W_ACK_PAYLOAD 0xA8
 #define RF24_W_TX_PAYLOAD_NOACK 0xB0
+#define RF24_ACTIVATE		0x50
 #define RF24_NOP           0xFF
 
 #endif
