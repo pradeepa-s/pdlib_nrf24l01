@@ -7,6 +7,9 @@ Change Log
 ===========
 [2015-04-03]:	Release V1.01
 			Provides support to all the functions except Dynamic Payload and Auto Ack payload.
+			
+[2015-04-13]:	Release V1.02
+			Provided support for Dynamic Payload and Ack Payload features
 
 Porting the library:
 ====================
