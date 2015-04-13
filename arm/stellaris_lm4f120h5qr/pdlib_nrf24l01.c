@@ -72,6 +72,12 @@
  * [5]. Library is compatible for both interrupt and polling
  * [6]. PDLIB_SPI library is supported by default
  *
+ *
+ * Version: 1.02
+ *
+ * [1]. Added support for dynamic payload.
+ * [2]. Added support for ack payload.
+ *
  * =====================================================================
  * Known Issues
  * =====================================================================
@@ -80,6 +86,10 @@
  *
  * [1]. Dynamic payload support is not added.
  * [2]. Auto ACK with payload support is not added
+ *
+ * Version: 1.02
+ *
+ * None
  *
  * =====================================================================
  * LM4F120H5QR (Stellaris)
@@ -99,11 +109,10 @@
  * 						PE3	<-> IRQ
  */
 
-//#define PDLIB_DEBUG
+#define PDLIB_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "nRF24L01.h"
 #include "pdlib_nrf24l01.h"
 
 #ifdef PDLIB_DEBUG
@@ -124,16 +133,21 @@
 #include "driverlib/gpio.h"
 #endif
 
+#define TYPE_RX		0x01
+#define TYPE_TX		0x02
 
+#define INTERNAL_STATE_INIT				(1 << 0)
+#define INTERNAL_STATE_DYNPL			(1 << 1)
+#define INTERNAL_STATE_ACKPL			(1 << 2)
+#define INTERNAL_STATE_FEATURE_ENABLED	(1 << 3)
+#define INTERNAL_STATE_POWER_UP			(1 << 4)
+#define INTERNAL_STATE_STAND_BY			(1 << 5)
 
 static void _NRF24L01_CEHigh();
 static void _NRF24L01_CELow();
 
 static void _NRF24L01_CSNHigh();
 static void _NRF24L01_CSNLow();
-
-#define TYPE_RX		0x01
-#define TYPE_TX		0x02
 
 static unsigned long g_ulCEPin;
 static unsigned long g_ulCEBase;
@@ -142,6 +156,7 @@ static unsigned long g_ulCSNBase;
 
 static unsigned char g_ucStatus;
 
+static unsigned int internal_states;
 
 /* PS:
  * 
@@ -181,7 +196,8 @@ NRF24L01_Init(	unsigned long ulCEBase,
 				unsigned long ulCSNPeriph,
 				unsigned char ucSSIIndex)
 {
-	//g_ucPdlibStatus = 0x00;
+	internal_states = 0x00;
+
 	/* PS: Initialize communication */
 #ifdef PDLIB_SPI
 	pdlibSPI_ConfigureSPIInterface(ucSSIIndex);
@@ -208,6 +224,8 @@ NRF24L01_Init(	unsigned long ulCEBase,
 	_NRF24L01_CSNHigh();
 
 	NRF24L01_RegisterInit();
+
+	internal_states |= INTERNAL_STATE_INIT;
 }
 
 #endif
@@ -239,7 +257,7 @@ void NRF24L01_InterruptInit(unsigned long ulIRQBase,
 
 	ROM_GPIOPinTypeGPIOInput(ulIRQBase, ulIRQPin);
 	ROM_GPIOPinIntClear(ulIRQBase, ulIRQPin);
-	ROM_GPIOIntTypeSet(ulIRQBase, ulIRQPin, GPIO_FALLING_EDGE);
+	ROM_GPIOIntTypeSet(ulIRQBase, ulIRQPin, GPIO_LOW_LEVEL);
 	ROM_GPIOPinIntEnable(ulIRQBase, ulIRQPin);
 
 	ROM_IntEnable(ulInterrupt);
@@ -569,6 +587,8 @@ NRF24L01_PowerDown()
 	NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
 	
 	_NRF24L01_CELow();
+
+	internal_states &= (~INTERNAL_STATE_POWER_UP);
 }
 
 /* PS:
@@ -589,6 +609,8 @@ NRF24L01_PowerUp()
 	unsigned char ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
 	ucCurrentVal |= (RF24_PWR_UP);
 	NRF24L01_RegisterWrite_8(RF24_CONFIG, ucCurrentVal);
+
+	internal_states |= INTERNAL_STATE_POWER_UP;
 }
 
 
@@ -652,9 +674,8 @@ NRF24L01_EnableRxMode()
 
 	NRF24L01_PowerUp();
 
-	// PS: Clear RX_DR interrupt
-	ucCurrentVal |= RF24_RX_DR;
-	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
+	// PS: Clear RX_DR interrupt TODO: Why?
+	NRF24L01_ClearInterruptFlag(PDLIB_INTERRUPT_DATA_READY);
 
 	ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
 	ucCurrentVal |= (RF24_PRIM_RX | RF24_PWR_UP);
@@ -698,14 +719,13 @@ void NRF24L01_DisableRxMode()
 void
 NRF24L01_EnableTxMode()
 {
-	unsigned char ucCurrentVal = NRF24L01_GetStatus();
+	unsigned char ucCurrentVal = 0;
 
 	// PS: Power up the device
 	NRF24L01_PowerUp();
 
-	// PS: Clear TX_DS and MAX_RT interrupts
-	ucCurrentVal |= (RF24_MAX_RT | RF24_TX_DS);
-	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
+	// PS: Clear TX_DS and MAX_RT interrupts TODO: why?
+	NRF24L01_ClearInterruptFlag(PDLIB_INTERRUPT_MAX_RT | PDLIB_INTERRUPT_DATA_SENT);
 
 	// PS: Set to TX mode
 	ucCurrentVal = NRF24L01_RegisterRead_8(RF24_CONFIG);
@@ -737,9 +757,8 @@ void NRF24L01_DisableTxMode()
 
 	_NRF24L01_CELow();
 
-	// PS: Clear TX_DS and MAX_RT interrupts
-	ucCurrentVal |= (RF24_MAX_RT | RF24_TX_DS);
-	NRF24L01_RegisterWrite_8(RF24_STATUS, ucCurrentVal);
+	// PS: Clear TX_DS and MAX_RT interrupts TODO: why?
+	NRF24L01_ClearInterruptFlag(PDLIB_INTERRUPT_MAX_RT | PDLIB_INTERRUPT_DATA_SENT);
 
 #ifdef PDLIB_DEBUG
 	PrintString("TX mode disabled\n\r");
@@ -854,6 +873,7 @@ int
 NRF24L01_IsTxFifoFull()
 {
 	unsigned char ucTxFifo;
+
 	ucTxFifo = NRF24L01_RegisterRead_8(RF24_FIFO_STATUS);
 
 	return ((ucTxFifo & RF24_FIFO_FULL) ? 1 : 0);
@@ -891,22 +911,35 @@ int NRF24L01_IsTxFifoEmpty()
  * Return		: 	Available number of bytes.
  * 
  * Description	: 	Reading the number of data bytes available
- * 					in the specified pipe.
+ * 					in the specified pipe (for static payload mode).
+ *
+ * 					For dynamic payload mode this will tell
+ * 					the top most RX_FIFO payload length.
  * 
  */
 
-unsigned char
+char
 NRF24L01_GetRxDataAmount(unsigned char ucDataPipe)
 {
-	unsigned char ucTemp;
-	if(ucDataPipe < 6)
-	{
-		ucTemp = NRF24L01_RegisterRead_8(RF24_RX_PW_P0 + ucDataPipe);
-		return (ucTemp & 0x3F);
-	}else
-	{
-		return 0;
+	char reg;
+	char ret = 0;
+
+	if((INTERNAL_STATE_DYNPL & internal_states) == 0){
+		if(ucDataPipe < 6)
+		{
+			reg = NRF24L01_RegisterRead_8(RF24_RX_PW_P0 + ucDataPipe);
+			ret = (reg & 0x3F);
+		}else
+		{
+			ret = 0;
+		}
+	}else{
+		NRF24L01_SendRcvCommand(RF24_R_RX_PL_WID, &reg, 1);
+
+		ret = reg;
 	}
+
+	return ret;
 }
 	
 	
@@ -941,7 +974,7 @@ NRF24L01_SetTXAddress(unsigned char* address)
  *
  * Return		: 	PDLIB_NRF24_SUCCESS			:	TX completed successfully
  *					PDLIB_NRF24_TX_ARC_REACHED	:	Maximum retransmissions elapsed
- *					PDLIB_NRF24_ERROR			:	None of the interrupts asserted (only when busy_wait = 0)
+ *					PDLIB_NRF24_ERROR			:	None of the TX interrupts asserted (only when busy_wait = 0)
  *
  * Description	: 	The function can wait until the
  * 						-TX payload is successfully delivered (If ACK is available)
@@ -984,6 +1017,71 @@ NRF24L01_WaitForTxComplete(char busy_wait)
 
 	return ret;
 }
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_GetInterruptState
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	PDLIB_NRF24_ERROR			:	No interrupts asserted
+ *					PDLIB_INTERRUPT_MAX_RT		:	Maximum retransmissions elapsed
+ *					PDLIB_INTERRUPT_DATA_READY	:	Data ready on RX FIFO
+ *					PDLIB_INTERRUPT_DATA_SENT	:	Data sent
+ *
+ * Description	: 	This function can be used to check the interrupt status
+ * 					of the module.
+ */
+
+char
+NRF24L01_GetInterruptState()
+{
+	char state = NRF24L01_GetStatus();
+
+	state &= (RF24_RX_DR | RF24_TX_DS | RF24_MAX_RT);
+	state = (state >> 4);
+
+	return state;
+
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_GetInterruptState
+ *
+ * Arguments	: 	PDLIB_INTERRUPT_MAX_RT		:	Maximum retransmissions elapsed interrupt
+ *					PDLIB_INTERRUPT_DATA_READY	:	Data ready on RX FIFO interrupt
+ *					PDLIB_INTERRUPT_DATA_SENT	:	Data sent interrupt
+ *
+ * Return		:	None
+ *
+ * Description	: 	This function will clear the interrupt associated with the BM
+ */
+
+void
+NRF24L01_ClearInterruptFlag(char interrupt_bm)
+{
+	char status = NRF24L01_GetStatus();
+
+	status &= ~(RF24_RX_DR | RF24_TX_DS | RF24_MAX_RT);
+
+	if(interrupt_bm & PDLIB_INTERRUPT_MAX_RT){
+		status |= RF24_MAX_RT;
+	}
+
+	if(interrupt_bm & PDLIB_INTERRUPT_DATA_READY){
+		status |= RF24_RX_DR;
+	}
+
+	if(interrupt_bm & PDLIB_INTERRUPT_DATA_SENT){
+		status |= RF24_TX_DS;
+	}
+
+	NRF24L01_RegisterWrite_8(RF24_STATUS, status);
+}
+
 
 
 /* PS:
@@ -1148,6 +1246,133 @@ NRF24L01_SetTxPayload(	char* pcData,
 }
 
 
+/* PS:
+ *
+ * Function		: 	NRF24L01_EnableFeatureAckPL
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Enable payload with ACK
+ *
+ */
+
+void
+NRF24L01_EnableFeatureAckPL()
+{
+	char data = 0x73;
+
+	if((internal_states & INTERNAL_STATE_STAND_BY) || (0 == (internal_states & INTERNAL_STATE_POWER_UP)))
+	{
+		/* PS: Enable dynpl for pipe0 */
+		NRF24L01_EnableFeatureDynPL(0x00);
+
+		/* PS: Check whether retransmission delay is sufficient */
+		data = NRF24L01_RegisterRead_8(RF24_SETUP_RETR);
+
+		if(0 == ((data & 0xF0) >> 4)){
+			NRF24L01_SetARD(500);
+		}
+
+		/* PS: Enable auto ack payload */
+		data = NRF24L01_RegisterRead_8(RF24_FEATURE);
+		NRF24L01_RegisterWrite_8(RF24_FEATURE, (data | RF24_EN_ACK_PAY));
+
+		internal_states |= INTERNAL_STATE_ACKPL;
+	}
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_EnableFeatureDynPL
+ *
+ * Arguments	: 	pipe : Pipe number to enable the feature
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Enable dynamic payload
+ *
+ */
+
+void
+NRF24L01_EnableFeatureDynPL(unsigned char pipe)
+{
+	char data = 0x73;
+
+	if((internal_states & INTERNAL_STATE_STAND_BY) || (0 == (internal_states & INTERNAL_STATE_POWER_UP)))
+	{
+		/* PS: Check whether features register is activated */
+		if(0 == (internal_states & INTERNAL_STATE_FEATURE_ENABLED))
+		{
+			char data = 0x73;
+			NRF24L01_SendCommand(RF24_ACTIVATE, &data, 1);
+
+			internal_states |= INTERNAL_STATE_FEATURE_ENABLED;
+		}
+
+		/* PS: Check whether DYN-PL feature is activated */
+		data = NRF24L01_RegisterRead_8(RF24_FEATURE);
+
+		if(0 == (data & RF24_EN_DPL)){
+			NRF24L01_RegisterWrite_8(RF24_FEATURE, (data | RF24_EN_DPL));
+		}
+
+		if(pipe <= 6)
+		{
+			/* PS: Check whether DYN-PD for 'pipe' is activated */
+			data = NRF24L01_RegisterRead_8(RF24_DYNPD);
+
+			if(0 == (data & pipe)){
+				NRF24L01_RegisterWrite_8(RF24_DYNPD, (data | (1 << pipe)));
+			}
+		}
+
+		internal_states |= INTERNAL_STATE_DYNPL;
+	}
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_EnableFeatureNoAckTx
+ *
+ * Arguments	: 	None
+ *
+ * Return		: 	None
+ *
+ * Description	: 	Enable W_TX_PAYLOAD_NOACK command
+ *
+ */
+
+
+void
+NRF24L01_EnableFeatureNoAckTx()
+{
+	char data = 0x73;
+
+	if((internal_states & INTERNAL_STATE_STAND_BY) || (0 == (internal_states & INTERNAL_STATE_POWER_UP)))
+	{
+		/* PS: Check whether features register is activated */
+		if(0 == (internal_states & INTERNAL_STATE_FEATURE_ENABLED))
+		{
+			char data = 0x73;
+			NRF24L01_SendCommand(RF24_ACTIVATE, &data, 1);
+
+			internal_states |= INTERNAL_STATE_FEATURE_ENABLED;
+		}
+
+		/* PS: Check whether DYN-PL feature is activated */
+		data = NRF24L01_RegisterRead_8(RF24_FEATURE);
+
+		if(0 == (data & RF24_EN_DYN_ACK)){
+			NRF24L01_RegisterWrite_8(RF24_FEATURE, (data | RF24_EN_DYN_ACK));
+		}
+	}
+}
+
+
 // PS: Implement TX reuse feature
 		// TODO
 
@@ -1190,7 +1415,6 @@ NRF24L01_GetData(	char pipe,
 	}else{
 
 		// PS: Validate pipe, Check FIFO status, Get packet size, Read data
-		//NRF24L01_GetStatus();
 		if(PDLIB_NRF24_SUCCESS == NRF24L01_IsDataReadyRx(&cTemp)){
 
 			if(pipe == cTemp){
@@ -1217,10 +1441,7 @@ NRF24L01_GetData(	char pipe,
 
 						// TODO: Check whether we need to check the actual FIFO state before clearing the interrupt.
 						// Clear RX_DR
-						NRF24L01_GetStatus();
-						g_ucStatus |= RF24_RX_DR;
-						NRF24L01_RegisterWrite_8(RF24_STATUS, g_ucStatus);
-						//NRF24L01_GetStatus();
+						NRF24L01_ClearInterruptFlag(PDLIB_INTERRUPT_DATA_READY);
 
 						ret = cTemp;
 					}
@@ -1264,6 +1485,78 @@ NRF24L01_ReadRxPayload(	char* pcData,
 	NRF24L01_SendRcvCommand(RF24_R_RX_PAYLOAD, pcData, cLength);
 }
  
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_SetAckPayload
+ *
+ * Arguments	: 	pucData		:	Buffer which contains the data to be written to TX fifo
+ * 					pipe		:	Which pipe to use (0~5)
+ * 					uiLength	:	Length of the data buffer
+ *
+ * Return		: 	PDLIB_NRF24_TX_FIFO_FULL 	: Tx FIFO full
+ * 					PDLIB_NRF24_SUCCESS			: Success
+ *
+ * Description	: 	Set the Ack payload.
+ *
+ */
+
+int
+NRF24L01_SetAckPayload(	char* pcData,
+						char pipe,
+						unsigned int uiLength)
+{
+	int ret = PDLIB_NRF24_SUCCESS;
+	char address = pipe;
+
+	if(pipe < 5 && pcData && uiLength > 0)
+	{
+		// PS: Check whether TX fifo is full
+		if(NRF24L01_IsTxFifoFull())
+		{
+			ret = PDLIB_NRF24_TX_FIFO_FULL;
+#ifdef PDLIB_DEBUG
+			PrintString("TX FIFO is full\n\r");
+#endif
+		}else
+		{
+			address = address & 0x07;
+			address |= RF24_W_ACK_PAYLOAD;
+
+			NRF24L01_SendCommand(address , pcData, uiLength);
+		}
+	}else
+	{
+		ret = PDLIB_NRF24_ERROR;
+	}
+
+
+	return ret;
+}
+
+
+/* PS:
+ *
+ * Function		: 	NRF24L01_
+ *
+ * Arguments	:
+ *
+ * Return		: 	None
+ *
+ * Description	:
+ *
+ */
+
+char
+NRF24L01_GetAckDataAmount()
+{
+	char data_amount = 0;
+
+	NRF24L01_SendRcvCommand(RF24_R_RX_PL_WID,&data_amount,1);
+
+	return data_amount;
+}
+
 /* PS:
  * 
  * Function		: 	NRF24L01_
@@ -1655,6 +1948,12 @@ _NRF24L01_CELow()
 #ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0x00);
 #endif
+
+	if(internal_states & INTERNAL_STATE_POWER_UP){
+		internal_states |= INTERNAL_STATE_STAND_BY;
+	}else{
+		internal_states &= (~INTERNAL_STATE_STAND_BY);
+	}
 }
 
 
@@ -1676,6 +1975,10 @@ _NRF24L01_CEHigh()
 #ifdef PART_LM4F120H5QR
 	ROM_GPIOPinWrite(g_ulCEBase, g_ulCEPin, 0xFF);
 #endif
+
+	if(internal_states & INTERNAL_STATE_POWER_UP){
+		internal_states &= (~INTERNAL_STATE_STAND_BY);
+	}
 }
 
 

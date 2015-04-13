@@ -1,6 +1,7 @@
 #ifndef _PDLIB_NRF24L01
 #define _PDLIB_NRF24L01
 
+#include "nRF24L01.h"
 
 /* Configurations */
 
@@ -21,6 +22,10 @@
 #define PDLIB_NRF24_PIPE4	4
 #define PDLIB_NRF24_PIPE5	5
 
+#define PDLIB_INTERRUPT_MAX_RT		1 << 0
+#define PDLIB_INTERRUPT_DATA_SENT	1 << 1
+#define PDLIB_INTERRUPT_DATA_READY	1 << 2
+
 /* PS: Function prototypes */
 
 /* PS: Basic APIs */
@@ -28,7 +33,7 @@ void NRF24L01_Init(unsigned long ulCEBase, unsigned long ulCEPin, unsigned long 
 int NRF24L01_SendData(char *pcData, unsigned int uiLength);
 int NRF24L01_SendDataTo(unsigned char *address, char *pcData, unsigned int uiLength);
 int NRF24L01_WaitForDataRx(char *pcPipeNo);
-unsigned char NRF24L01_GetRxDataAmount(unsigned char ucDataPipe);
+char NRF24L01_GetRxDataAmount(unsigned char ucDataPipe);
 int NRF24L01_GetData(char pipe, char* pcData, char *length);
 
 /* Intermediate APIs */
@@ -51,6 +56,12 @@ void NRF24L01_SetARD(unsigned short ucVal);
 void NRF24L01_SetAddressWidth(unsigned char ucVal);
 unsigned char NRF24L01_GetStatus();
 
+void NRF24L01_EnableFeatureDynPL(unsigned char pipe);
+void NRF24L01_EnableFeatureAckPL();
+void NRF24L01_EnableFeatureNoAckTx();
+char NRF24L01_GetInterruptState();
+void NRF24L01_ClearInterruptFlag(char interrupt_bm);
+
 /* TX mode related */
 void NRF24L01_FlushTX();
 void NRF24L01_SetTXAddress(unsigned char* address);
@@ -62,7 +73,7 @@ int NRF24L01_IsTxFifoFull();
 int NRF24L01_IsTxFifoEmpty();
 int NRF24L01_AttemptTx();
 int NRF24L01_WaitForTxComplete(char busy_wait);
-
+char NRF24L01_GetAckDataAmount();
 
 /* RX mode related */
 void NRF24L01_FlushRX();
@@ -72,6 +83,7 @@ void NRF24L01_EnableRxMode();
 void NRF24L01_DisableRxMode();
 int NRF24L01_IsDataReadyRx(char *pcPipeNo);
 void NRF24L01_ReadRxPayload(char* pcData, char cLength);
+int NRF24L01_SetAckPayload(char* pcData, char pipe, unsigned int uiLength);
 unsigned char NRF24L01_CarrierDetect();
 
 /* PS: Advanced APIs, Register level access */
